@@ -7,3 +7,9 @@
 <Files append.php>
 	Header set Access-Control-Allow-Origin https://wtmdradio.org
 </Files>
+
+<FilesMatch "^(append.php|like.txt)$">
+
+	Header set Cache-Control "max-age=0, must-revalidate, no-store"
+
+</FilesMatch>

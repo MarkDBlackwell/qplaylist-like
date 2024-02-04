@@ -24,18 +24,22 @@ function clean_input($string)
 // Constants:
 $double_quote = '"';
 $ip_address = $_SERVER['REMOTE_ADDR'];
-$like_filename = 'dynamic/like.txt';
+$like_filename = 'like.txt';
 $my_query_keys = array(
     'song_artist',
     'song_title',
     );
-$response_ok_json = '';
+$response_bad_file_json                     = json_encode(array('response' => 'Unable to open comments file!'));
+$response_bad_request_parameters_json       = json_encode(array('response' => 'Invalid request parameters!'));
+$response_bad_request_parameters_count_json = json_encode(array('response' => 'Invalid request parameters count!'));
+$response_ok_json                           = json_encode(array('response' => 'good'));
 $separator = ' ';
 
 // Depends upon the above:
 
+count($my_query_keys) === count($_POST) or die($response_bad_request_parameters_count_json);
 foreach ($my_query_keys as $key)
-    isset($_POST[$key]) or die();
+    isset($_POST[$key]) or die($response_bad_request_parameters_json);
 
 $song_artist = clean_input($_POST['song_artist']);
 $song_title  = clean_input($_POST['song_title' ]);
@@ -60,7 +64,7 @@ $string_to_write =
 //   "Open for writing only; place the file pointer at the end of the file.
 //   If the file does not exist, attempt to create it."
 
-$myfile = fopen($like_filename, 'a') or die();
+$myfile = fopen($like_filename, 'a') or die($response_bad_file_json);
 
 fwrite($myfile, $string_to_write);
 
