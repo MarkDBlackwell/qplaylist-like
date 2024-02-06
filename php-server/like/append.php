@@ -9,7 +9,8 @@
 /* See:
 https://stackoverflow.com/questions/24972424/php-create-or-write-append-in-text-file
 
-Accept AJAX requests to append song likes to a file.
+Purpose:
+Accept XHR (AJAX) requests to append song likes to a file.
 */
 
 function clean_input($string)
@@ -22,6 +23,7 @@ function clean_input($string)
 
 
 // Constants:
+
 $double_quote = '"';
 $ip_address = $_SERVER['REMOTE_ADDR'];
 $like_filename = 'like.txt';
@@ -29,20 +31,25 @@ $my_query_keys = array(
     'song_artist',
     'song_title',
     );
-$response_bad_file_json                     = json_encode(array('response' => 'Unable to open comments file!'));
-$response_bad_request_parameters_json       = json_encode(array('response' => 'Invalid request parameters!'));
-$response_bad_request_parameters_count_json = json_encode(array('response' => 'Invalid request parameters count!'));
-$response_ok_json                           = json_encode(array('response' => 'good'));
+$response_bad_file        = json_encode(array('response' => 'Unable to open likes file!'));
+$response_bad_input_count = json_encode(array('response' => 'Bad input count!'));
+$response_input_all_empty = json_encode(array('response' => 'All the inputs are empty!'));
+$response_input_missing   = json_encode(array('response' => 'An input is missing!'));
+$response_ok              = json_encode(array('response' => 'good'));
 $separator = ' ';
 
 // Depends upon the above:
 
-count($my_query_keys) === count($_POST) or die($response_bad_request_parameters_count_json);
+count($my_query_keys) === count($_POST) or die($response_bad_input_count);
 foreach ($my_query_keys as $key)
-    isset($_POST[$key]) or die($response_bad_request_parameters_json);
+    isset($_POST[$key]) or die($response_input_missing);
 
 $song_artist = clean_input($_POST['song_artist']);
 $song_title  = clean_input($_POST['song_title' ]);
+
+$input_joined = $song_artist . $song_title;
+
+strlen($input_joined) > 0 or die($response_input_all_empty);
 
 date_default_timezone_set('UTC');
 
@@ -64,12 +71,12 @@ $string_to_write =
 //   "Open for writing only; place the file pointer at the end of the file.
 //   If the file does not exist, attempt to create it."
 
-$myfile = fopen($like_filename, 'a') or die($response_bad_file_json);
+$myfile = fopen($like_filename, 'a') or die($response_bad_file);
 
 fwrite($myfile, $string_to_write);
 
 fclose($myfile);
 
-echo $response_ok_json;
+echo $response_ok;
 exit();
 ?>
