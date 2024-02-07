@@ -8,8 +8,12 @@
 	Header set Access-Control-Allow-Origin https://wtmdradio.org
 
 	Header set Cache-Control "no-store"
+
+	Header set Content-Type: "application/json; charset=utf-8"
 </Files>
 
 <Files like.txt>
 	Header set Cache-Control "no-cache"
+
+	Header set Content-Type: "text/plain; charset=utf-8"
 </Files>
