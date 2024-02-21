@@ -4,16 +4,15 @@ import Html
 import Html.Attributes as A
 
 
-classes =
-    [ "aloof"
-    , "aloof"
-    , "aloof"
-    , "aloof"
-    , "like"
-    ]
+divSong liked =
+    let
+        class =
+            if liked then
+                "like"
 
-
-div class =
+            else
+                "aloof"
+    in
     Html.div
         []
         [ Html.span
@@ -23,7 +22,11 @@ div class =
 
 
 divs =
-    List.map div classes
+    let
+        fiveLiked =
+            List.map (\song -> List.member song likes) songsCurrent
+    in
+    List.map divSong fiveLiked
 
 
 htmlOutput =
@@ -32,5 +35,20 @@ htmlOutput =
         divs
 
 
+likes =
+    [ ( "Bob", "Highway 51 Revisited" )
+    , ( "Alice", "Wonderland" )
+    ]
+
+
 main =
     htmlOutput
+
+
+songsCurrent =
+    [ ( "Charlie", "Chan" )
+    , ( "Dave", "Brubeck" )
+    , ( "Alice", "Wonderland" )
+    , ( "Frank", "Diary" )
+    , ( "Edger", "A. Poe" )
+    ]
