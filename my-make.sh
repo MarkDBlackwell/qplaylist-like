@@ -21,8 +21,8 @@ echo "Formatting $DIRECTORY_SOURCE_ELM:" && \
 elm-format --yes $DIRECTORY_SOURCE_ELM && \
 
 NAME=Main && \
-#elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_TEMP/$NAME.js && \
- elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_TEMP/$NAME.js --optimize && \
+# elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_TEMP/$NAME.js --optimize && \
+ elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_TEMP/$NAME.js && \
 
 #echo "Minifying $NAME.js to $NAME-min.js" && \
 
