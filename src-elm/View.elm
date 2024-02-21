@@ -1,19 +1,11 @@
-module View exposing (..)
+module View exposing (htmlOutput)
 
 import Data
 import Html
 import Html.Attributes as A
 
 
-divSong liked =
-    let
-        class =
-            if liked then
-                "like"
-
-            else
-                "aloof"
-    in
+divSong class =
     Html.div
         []
         [ Html.span
@@ -22,15 +14,25 @@ divSong liked =
         ]
 
 
-divs =
+heartClass song =
     let
-        fiveLiked =
-            List.map (\song -> List.member song Data.likes) Data.songsCurrent
+        class liked =
+            if liked then
+                "like"
+
+            else
+                "aloof"
     in
-    List.map divSong fiveLiked
+    Data.songsLiked
+        |> List.member song
+        |> class
+
+
+heartClassFive =
+    List.map heartClass Data.songsCurrent
 
 
 htmlOutput =
     Html.main_
         []
-        divs
+        (List.map divSong heartClassFive)
