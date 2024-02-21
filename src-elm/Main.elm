@@ -4,37 +4,33 @@ import Html
 import Html.Attributes as A
 
 
-main =
+classes =
+    [ "aloof"
+    , "aloof"
+    , "aloof"
+    , "aloof"
+    , "like"
+    ]
+
+
+div class =
+    Html.div
+        []
+        [ Html.span
+            [ A.class class ]
+            []
+        ]
+
+
+divs =
+    List.map div classes
+
+
+htmlOutput =
     Html.main_
         []
-        [ Html.div
-            []
-            [ Html.span
-                [ A.class "aloof" ]
-                []
-            ]
-        , Html.div
-            []
-            [ Html.span
-                [ A.class "like" ]
-                []
-            ]
-        , Html.div
-            []
-            [ Html.span
-                [ A.class "aloof" ]
-                []
-            ]
-        , Html.div
-            []
-            [ Html.span
-                [ A.class "aloof" ]
-                []
-            ]
-        , Html.div
-            []
-            [ Html.span
-                [ A.class "aloof" ]
-                []
-            ]
-        ]
+        divs
+
+
+main =
+    htmlOutput
