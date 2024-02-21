@@ -2,15 +2,29 @@ module Data exposing (..)
 
 
 likes =
-    [ ( "Bob", "Highway 51 Revisited" )
-    , ( "Alice", "Wonderland" )
+    [ { artist = "Bob"
+      , title = "Highway 51 Revisited"
+      }
+    , { artist = "Alice"
+      , title = "Wonderland"
+      }
     ]
 
 
 songsCurrent =
-    [ ( "Charlie", "Chan" )
-    , ( "Dave", "Brubeck" )
-    , ( "Frank", "Diary" )
-    , ( "Alice", "Wonderland" )
-    , ( "Edger", "A. Poe" )
+    [ { artist = "Charlie"
+      , title = "Chan"
+      }
+    , { artist = "Dave"
+      , title = "Brubeck"
+      }
+    , { artist = "Alice"
+      , title = "Wonderland"
+      }
+    , { artist = "Frank"
+      , title = "Diary"
+      }
+    , { artist = "Edger"
+      , title = "A. Poe"
+      }
     ]
