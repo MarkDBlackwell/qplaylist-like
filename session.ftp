@@ -1,0 +1,8 @@
+user markftp
+verbose
+binary
+cd /transfer
+pwd
+lcd tmp
+put Main.js
+quit
