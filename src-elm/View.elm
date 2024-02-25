@@ -31,3 +31,7 @@ heartClassFive =
 htmlOutput =
     List.map divSong heartClassFive
         |> Html.main_ []
+
+
+view : Model -> Html Msg
+view = _ htmlOutput

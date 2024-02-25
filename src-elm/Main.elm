@@ -3,9 +3,48 @@ module Main exposing (main)
 import View
 
 
-main =
-    View.htmlOutput
+--See:
+--https://elm-lang.org/examples/clock
 
+
+main =
+    View.view 0
+
+
+type alias Model =
+  { something : Int
+  }
+
+
+init : () -> (Model, Cmd Msg)
+init _ =
+  ( Model 0
+  , Cmd.batch [ ]
+  )
+
+
+-- UPDATE
+
+
+type Msg
+  = Nothing
+
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+    Nothing ->
+      ( { model }
+      , Cmd.none
+      )
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Nothing
+
+
+
+-- VIEW
 
 
 --cmdLikeRequest =
