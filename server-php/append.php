@@ -28,6 +28,7 @@ $double_quote = '"';
 $ip_address = $_SERVER['REMOTE_ADDR'];
 $like_filename = 'like.txt';
 $my_query_keys = array(
+    'direction',
     'song_artist',
     'song_title',
     );
@@ -44,10 +45,11 @@ count($my_query_keys) === count($_POST) or die($response_bad_input_count);
 foreach ($my_query_keys as $key)
     isset($_POST[$key]) or die($response_input_missing);
 
+$direction   = clean_input($_POST['direction'  ]);
 $song_artist = clean_input($_POST['song_artist']);
 $song_title  = clean_input($_POST['song_title' ]);
 
-$input_joined = $song_artist . $song_title;
+$input_joined = $direction . $song_artist . $song_title;
 
 strlen($input_joined) > 0 or die($response_input_all_empty);
 
@@ -60,6 +62,8 @@ $string_to_write =
     $timestamp .
         $separator .
     $ip_address .
+        $separator .
+    $direction .
         $separator . $double_quote .
     $song_artist .
         $double_quote . $separator . $double_quote .
