@@ -6,12 +6,8 @@ import Html.Attributes as A
 
 
 divSong class =
-    Html.div
-        []
-        [ Html.span
-            [ A.class class ]
-            []
-        ]
+    Html.div []
+        [ Html.span [ A.class class ] [] ]
 
 
 heartClass song =
@@ -33,6 +29,5 @@ heartClassFive =
 
 
 htmlOutput =
-    Html.main_
-        []
-        (List.map divSong heartClassFive)
+    List.map divSong heartClassFive
+        |> Html.main_ []
