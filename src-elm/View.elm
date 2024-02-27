@@ -9,30 +9,26 @@ import Model as M
 -- VIEW
 
 
-heartClass : M.Model -> M.Song -> M.Class
-heartClass model song =
-    let
-        class : Bool -> M.Class
-        class liked =
-            if liked then
-                "like"
-
-            else
-                "aloof"
-    in
-    class
-        (List.member song model.songsLike)
-
-
-heartClassFive : M.Model -> List M.Class
-heartClassFive model =
-    List.map (heartClass model) model.songsCurrent
-
-
 view : M.Model -> Html.Html M.Msg
 view model =
-    Html.main_ [] <|
-        List.map viewSong (heartClassFive model)
+    let
+        heartClasses : List M.Class
+        heartClasses =
+            let
+                heartClass : Bool -> M.Class
+                heartClass like =
+                    if like then
+                        "like"
+
+                    else
+                        "aloof"
+            in
+            model.songsCurrent
+                |> List.map (\x -> List.member x model.songsLike)
+                |> List.map heartClass
+    in
+    Html.main_ []
+        (List.map viewSong heartClasses)
 
 
 viewSong : M.Class -> Html.Html M.Msg
