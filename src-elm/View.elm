@@ -9,12 +9,6 @@ import Model as M
 -- VIEW
 
 
-divSong : M.Class -> Html.Html M.Msg
-divSong class =
-    Html.div []
-        [ Html.span [ A.class class ] [] ]
-
-
 heartClass : M.Model -> M.Song -> M.Class
 heartClass model song =
     let
@@ -38,4 +32,10 @@ heartClassFive model =
 view : M.Model -> Html.Html M.Msg
 view model =
     Html.main_ [] <|
-        List.map divSong (heartClassFive model)
+        List.map viewSong (heartClassFive model)
+
+
+viewSong : M.Class -> Html.Html M.Msg
+viewSong class =
+    Html.div []
+        [ Html.span [ A.class class ] [] ]
