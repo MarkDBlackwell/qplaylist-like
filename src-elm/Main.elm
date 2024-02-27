@@ -3,35 +3,35 @@ module Main exposing (main)
 import Browser
 import Http
 import Json.Decode as D
-import Model
+import Model as M
 import View
 
 
-appendJsonDecoder : D.Decoder Model.AppendJsonRoot
+appendJsonDecoder : D.Decoder M.AppendJsonRoot
 appendJsonDecoder =
-    D.map Model.AppendJsonRoot
+    D.map M.AppendJsonRoot
         (D.field "response" D.string)
 
 
-latestFiveJsonDecoder : D.Decoder Model.LatestFiveJsonRoot
+latestFiveJsonDecoder : D.Decoder M.LatestFiveJsonRoot
 latestFiveJsonDecoder =
-    D.map Model.LatestFiveJsonRoot
+    D.map M.LatestFiveJsonRoot
         (D.field "latestFive" <| D.list songJsonDecoder)
 
 
-main : Program () Model.Model Model.Msg
+main : Program () M.Model M.Msg
 main =
     Browser.element
-        { init = Model.init
+        { init = M.init
         , update = update
         , subscriptions = subscriptions
         , view = View.view
         }
 
 
-songJsonDecoder : D.Decoder Model.Song
+songJsonDecoder : D.Decoder M.Song
 songJsonDecoder =
-    D.map2 Model.Song
+    D.map2 M.Song
         (D.field "artist" D.string)
         (D.field "title" D.string)
 
@@ -41,7 +41,7 @@ songJsonDecoder =
 {-
    , Http.get
        { url = "dynamic/LatestFive.json"
-       , expect = Http.expectJson Model.GotSongsResponse decoderSongs
+       , expect = Http.expectJson M.GotSongsResponse decoderSongs
        }
 
    appendForm artist title =
@@ -65,10 +65,10 @@ songJsonDecoder =
 -}
 
 
-update : Model.Msg -> Model.Model -> ( Model.Model, Cmd Model.Msg )
+update : M.Msg -> M.Model -> ( M.Model, Cmd M.Msg )
 update msg model =
     case msg of
-        Model.GotAppendResponse resultAppend ->
+        M.GotAppendResponse resultAppend ->
             case resultAppend of
                 Err _ ->
                     ( model
@@ -87,7 +87,7 @@ update msg model =
                             , Cmd.none
                             )
 
-        Model.GotSongsResponse resultSongs ->
+        M.GotSongsResponse resultSongs ->
             case resultSongs of
                 Err _ ->
                     ( model
@@ -106,12 +106,12 @@ update msg model =
                             , Cmd.none
                             )
 
-        Model.GotTouchEvent ->
+        M.GotTouchEvent ->
             ( model
             , Http.post
                 { url = "append.json"
                 , body = Http.stringBody "direction=l&song_artist=a+new&song_title=a+new+title"
-                , expect = Http.expectJson Model.GotAppendResponse
+                , expect = Http.expectJson M.GotAppendResponse
                 }
             )
 
@@ -120,6 +120,6 @@ update msg model =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model.Model -> Sub Model.Msg
+subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.none
