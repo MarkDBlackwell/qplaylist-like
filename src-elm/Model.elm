@@ -18,7 +18,7 @@ type alias Class =
 
 
 type alias LatestFiveJsonRoot =
-    { latestFive : List Song }
+    { latestFive : Songs }
 
 
 type alias Model =
@@ -49,8 +49,8 @@ type alias Title =
 
 
 type Msg
-    = GotAppendResponse (Result Http.Error AppendJsonRoot)
-    | GotSongsResponse (Result Http.Error LatestFiveJsonRoot)
+    = GotAppendResponse (Result Http.Error String)
+    | GotSongsResponse (Result Http.Error Songs)
     | GotTimeTick Time.Posix
     | GotTouchEvent
 
@@ -83,7 +83,7 @@ init _ =
     )
 
 
-songsCurrentInit : List Song
+songsCurrentInit : Songs
 songsCurrentInit =
     [ Song "Charlie" "Chan"
     , Song "Alice" "Wonderland"
@@ -93,7 +93,7 @@ songsCurrentInit =
     ]
 
 
-songsLikeInit : List Song
+songsLikeInit : Songs
 songsLikeInit =
     [ Song "Bob" "Highway 51 Revisited"
     , Song "Alice" "Wonderland"

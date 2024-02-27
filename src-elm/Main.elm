@@ -7,15 +7,15 @@ import Model as M
 import View
 
 
-appendJsonDecoder : D.Decoder M.AppendJsonRoot
+appendJsonDecoder : D.Decoder String
 appendJsonDecoder =
-    D.map M.AppendJsonRoot
+    D.map (M.AppendJsonRoot >> .response)
         (D.field "response" D.string)
 
 
-latestFiveJsonDecoder : D.Decoder M.LatestFiveJsonRoot
+latestFiveJsonDecoder : D.Decoder M.Songs
 latestFiveJsonDecoder =
-    D.map M.LatestFiveJsonRoot
+    D.map (M.LatestFiveJsonRoot >> .latestFive)
         (D.field "latestFive" <| D.list songJsonDecoder)
 
 
