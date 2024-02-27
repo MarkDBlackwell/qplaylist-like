@@ -1,0 +1,21 @@
+  Learned new things:
+Use Browser module for Elm cycle.
+When importing, don't use "exposing." Always use qualified names and qualify the references; e.g., Html.div.
+Import using "as." E.g., import Html.Attributes as A, then: A.src.
+Design to avoid Maybe types, if possible.
+Type alias of a record includes a constructor.
+Each custom type variant includes a constructor.
+Keep more code in a single big file.
+Use custom types for state-space.
+Custom types might somehow include pattern matching.
+The constrained type variables are:
+  number, appendable, comparable and compappend. See:
+  https://guide.elm-lang.org/types/reading_types
+
+See:
+https://elm-lang.org/examples/clock
+https://discourse.elm-lang.org/t/escaping-from-npm/7597
+https://dev.to/jjant/a-guide-to-native-code-and-effect-managers-in-elm-part-1-commands-1k6n
+https://korban.net/elm/json2elm/
+https://harfangk.github.io/2018/01/27/elm-function-operators.html
+https://elm-lang.org/docs/syntax

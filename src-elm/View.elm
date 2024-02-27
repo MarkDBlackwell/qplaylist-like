@@ -1,8 +1,12 @@
-module View exposing (htmlOutput)
+module View exposing (view)
 
-import Data
 import Html
 import Html.Attributes as A
+import Model
+
+
+
+-- VIEW
 
 
 divSong class =
@@ -10,7 +14,7 @@ divSong class =
         [ Html.span [ A.class class ] [] ]
 
 
-heartClass song =
+heartClass model song =
     let
         class liked =
             if liked then
@@ -19,19 +23,14 @@ heartClass song =
             else
                 "aloof"
     in
-    Data.songsLiked
-        |> List.member song
-        |> class
+    class
+        (List.member song model.songsLiked)
 
 
-heartClassFive =
-    List.map heartClass Data.songsCurrent
+heartClassFive model =
+    List.map (heartClass model) model.songsCurrent
 
 
-htmlOutput =
-    List.map divSong heartClassFive
-        |> Html.main_ []
-
-
-view : Model -> Html Msg
-view = _ htmlOutput
+view model =
+    Html.main_ [] <|
+        List.map divSong (heartClassFive model)

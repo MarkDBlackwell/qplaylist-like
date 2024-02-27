@@ -1,0 +1,5 @@
+Paste these into `elm repl`.
+
+  Code was derived from code generated at:
+
+https://korban.net/elm/json2elm/
