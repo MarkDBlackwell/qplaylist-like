@@ -2,6 +2,7 @@ module Model exposing (..)
 
 import Http
 import Task
+import Time
 
 
 type alias AppendJsonRoot =
@@ -48,8 +49,9 @@ type alias Title =
 
 
 type Msg
-    = GotAppendResponse (Result Http.Error StringJson)
-    | GotSongsResponse (Result Http.Error StringJson)
+    = GotAppendResponse (Result Http.Error AppendJsonRoot)
+    | GotSongsResponse (Result Http.Error LatestFiveJsonRoot)
+    | GotTimeTick Time.Posix
     | GotTouchEvent
 
 
@@ -96,3 +98,12 @@ songsLikeInit =
     [ Song "Bob" "Highway 51 Revisited"
     , Song "Alice" "Wonderland"
     ]
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Time.every 10000 GotTimeTick

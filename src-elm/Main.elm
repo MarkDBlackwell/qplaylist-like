@@ -24,7 +24,7 @@ main =
     Browser.element
         { init = M.init
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = M.subscriptions
         , view = View.view
         }
 
@@ -38,31 +38,6 @@ songJsonDecoder =
 
 
 -- UPDATE
-{-
-   , Http.get
-       { url = "dynamic/LatestFive.json"
-       , expect = Http.expectJson M.GotSongsResponse decoderSongs
-       }
-
-   appendForm artist title =
-       Html.form
-           [ A.action "append.json"
-           , A.method "post"
-           ]
-           [ Html.input
-               [ A.name "direction"
-               , A.value "l"
-               ]
-           , Html.input
-               [ A.name "song_artist"
-               , A.value artist
-               ]
-           , Html.input
-               [ A.name "song_title"
-               , A.value title
-               ]
-           ]
--}
 
 
 update : M.Msg -> M.Model -> ( M.Model, Cmd M.Msg )
@@ -70,56 +45,70 @@ update msg model =
     case msg of
         M.GotAppendResponse resultAppend ->
             case resultAppend of
-                Err _ ->
+                Err err ->
+                    let
+                        ignored =
+                            Debug.log "resultAppend error" err
+                    in
                     ( model
                     , Cmd.none
                     )
 
-                Ok appendResponseStringJson ->
-                    case D.decodeString appendJsonDecoder appendResponseStringJson of
-                        Err _ ->
-                            ( model
-                            , Cmd.none
-                            )
-
-                        Ok appendDecoded ->
-                            ( model
-                            , Cmd.none
-                            )
+                Ok appendJsonRoot ->
+                    let
+                        ignored =
+                            Debug.log "appendJsonRoot" appendJsonRoot
+                    in
+                    ( model
+                    , Cmd.none
+                    )
 
         M.GotSongsResponse resultSongs ->
             case resultSongs of
-                Err _ ->
+                Err err ->
+                    let
+                        ignored =
+                            Debug.log "resultSongs error" err
+                    in
                     ( model
                     , Cmd.none
                     )
 
-                Ok latestFiveResponseStringJson ->
-                    case D.decodeString latestFiveJsonDecoder latestFiveResponseStringJson of
-                        Err _ ->
-                            ( model
-                            , Cmd.none
-                            )
+                Ok latestFiveJsonRoot ->
+                    let
+                        ignored =
+                            Debug.log "latestFiveJsonRoot" latestFiveJsonRoot
+                    in
+                    ( model
+                    , Cmd.none
+                    )
 
-                        Ok songsDecoded ->
-                            ( model
-                            , Cmd.none
-                            )
+        M.GotTimeTick timePosix ->
+            let
+                contentType =
+                    "application/x-www-form-urlencoded"
+
+                ignored =
+                    Debug.log "got time tick" 0
+
+                payload =
+                    "direction=l&song_artist=a+new&song_title=a+new+title"
+            in
+            ( model
+            , Cmd.batch
+                [ Http.post
+                    { body = Http.stringBody contentType payload
+                    , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
+                    , url = "append.json"
+                    }
+                , Http.get
+                    { expect = Http.expectJson M.GotSongsResponse latestFiveJsonDecoder
+                    , url = "dynamic/LatestFive.json"
+                    }
+                ]
+            )
 
         M.GotTouchEvent ->
             ( model
-            , Http.post
-                { url = "append.json"
-                , body = Http.stringBody "direction=l&song_artist=a+new&song_title=a+new+title"
-                , expect = Http.expectJson M.GotAppendResponse
-                }
+            , Cmd.none
             )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : M.Model -> Sub M.Msg
-subscriptions model =
-    Sub.none
