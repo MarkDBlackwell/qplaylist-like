@@ -12,6 +12,10 @@ type alias Artist =
     String
 
 
+type alias Class =
+    String
+
+
 type alias LatestFiveJsonRoot =
     { latestFive : List Song }
 
@@ -50,6 +54,7 @@ type OverallState
     | Idle
 
 
+cmdMsg2Cmd : Msg -> Cmd Msg
 cmdMsg2Cmd msg =
     --See:
     --  http://github.com/billstclair/elm-dynamodb/blob/7ac30d60b98fbe7ea253be13f5f9df4d9c661b92/src/DynamoBackend.elm
@@ -72,6 +77,7 @@ init _ =
     )
 
 
+songsCurrentInit : List Song
 songsCurrentInit =
     [ Song "Charlie" "Chan"
     , Song "Alice" "Wonderland"
@@ -81,6 +87,7 @@ songsCurrentInit =
     ]
 
 
+songsLikedInit : List Song
 songsLikedInit =
     [ Song "Bob" "Highway 51 Revisited"
     , Song "Alice" "Wonderland"

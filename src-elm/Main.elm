@@ -7,16 +7,19 @@ import Model
 import View
 
 
+appendJsonDecoder : D.Decoder Model.AppendJsonRoot
 appendJsonDecoder =
     D.map Model.AppendJsonRoot
         (D.field "response" D.string)
 
 
+latestFiveJsonDecoder : D.Decoder Model.LatestFiveJsonRoot
 latestFiveJsonDecoder =
     D.map Model.LatestFiveJsonRoot
         (D.field "latestFive" <| D.list songJsonDecoder)
 
 
+main : Program () Model.Model Model.Msg
 main =
     Browser.element
         { init = Model.init
@@ -26,6 +29,7 @@ main =
         }
 
 
+songJsonDecoder : D.Decoder Model.Song
 songJsonDecoder =
     D.map2 Model.Song
         (D.field "artist" D.string)
@@ -61,6 +65,7 @@ songJsonDecoder =
 -}
 
 
+update : Model.Msg -> Model.Model -> ( Model.Model, Cmd Model.Msg )
 update msg model =
     case msg of
         Model.GotAppendResponse resultAppend ->
@@ -115,5 +120,6 @@ update msg model =
 -- SUBSCRIPTIONS
 
 
+subscriptions : Model.Model -> Sub Model.Msg
 subscriptions model =
     Sub.none
