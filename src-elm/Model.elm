@@ -24,7 +24,7 @@ type alias Model =
     { likesToProcess : Songs
     , overallState : OverallState
     , songsCurrent : Songs
-    , songsLiked : Songs
+    , songsLike : Songs
     , unlikesToProcess : Songs
     }
 
@@ -39,13 +39,17 @@ type alias Songs =
     List Song
 
 
+type alias StringJson =
+    String
+
+
 type alias Title =
     String
 
 
 type Msg
-    = GotAppendResponse (Result Http.Error String)
-    | GotSongsResponse (Result Http.Error String)
+    = GotAppendResponse (Result Http.Error StringJson)
+    | GotSongsResponse (Result Http.Error StringJson)
     | GotTouchEvent
 
 
@@ -70,7 +74,7 @@ init _ =
     ( { likesToProcess = []
       , overallState = Idle
       , songsCurrent = songsCurrentInit
-      , songsLiked = songsLikedInit
+      , songsLike = songsLikeInit
       , unlikesToProcess = []
       }
     , cmdMsg2Cmd GotTouchEvent
@@ -87,8 +91,8 @@ songsCurrentInit =
     ]
 
 
-songsLikedInit : List Song
-songsLikedInit =
+songsLikeInit : List Song
+songsLikeInit =
     [ Song "Bob" "Highway 51 Revisited"
     , Song "Alice" "Wonderland"
     ]

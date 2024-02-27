@@ -27,7 +27,7 @@ heartClass model song =
                 "aloof"
     in
     class
-        (List.member song model.songsLiked)
+        (List.member song model.songsLike)
 
 
 heartClassFive : M.Model -> List M.Class

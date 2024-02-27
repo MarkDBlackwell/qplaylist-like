@@ -75,8 +75,8 @@ update msg model =
                     , Cmd.none
                     )
 
-                Ok appendResponseString ->
-                    case D.decodeString appendJsonDecoder appendResponseString of
+                Ok appendResponseStringJson ->
+                    case D.decodeString appendJsonDecoder appendResponseStringJson of
                         Err _ ->
                             ( model
                             , Cmd.none
@@ -94,8 +94,8 @@ update msg model =
                     , Cmd.none
                     )
 
-                Ok latestFiveResponseString ->
-                    case D.decodeString latestFiveJsonDecoder latestFiveResponseString of
+                Ok latestFiveResponseStringJson ->
+                    case D.decodeString latestFiveJsonDecoder latestFiveResponseStringJson of
                         Err _ ->
                             ( model
                             , Cmd.none
