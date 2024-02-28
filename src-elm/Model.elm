@@ -28,10 +28,19 @@ type alias LatestFiveJsonRoot =
 type alias Model =
     { likesToProcess : Songs
     , overallState : OverallState
+    , selectedSlotsToProcess : SelectedSlotsToProcess
     , songsCurrent : Songs
     , songsLike : Songs
     , unlikesToProcess : Songs
     }
+
+
+type alias SelectedSlotsToProcess =
+    List SlotTouchIndex
+
+
+type alias SlotTouchIndex =
+    Int
 
 
 type alias Song =
@@ -54,9 +63,9 @@ type alias Title =
 
 type Msg
     = GotAppendResponse (Result Http.Error AppendResponseString)
-    | GotSongsResponse (Result Http.Error Songs)
+    | GotSongsCurrentResponse (Result Http.Error Songs)
     | GotTimeTick Time.Posix
-    | GotTouchEvent
+    | GotTouchEvent SlotTouchIndex
 
 
 type OverallState
@@ -75,38 +84,36 @@ cmdMsg2Cmd msg =
             identity
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { likesToProcess = []
-      , overallState = HaveActiveLikes
-      , songsCurrent = songsCurrentInit
-      , songsLike = songsLikeInit
-      , unlikesToProcess = []
-      }
-    , cmdMsg2Cmd GotTouchEvent
-    )
-
-
 songsCurrentCountMax : Int
 songsCurrentCountMax =
     5
 
 
+
+-- INITIALIZATION
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { likesToProcess = []
+      , overallState = Idle
+      , selectedSlotsToProcess = []
+      , songsCurrent = songsCurrentInit
+      , songsLike = []
+      , unlikesToProcess = []
+      }
+    , Cmd.none
+    )
+
+
+songEmpty : Song
+songEmpty =
+    Song "" ""
+
+
 songsCurrentInit : Songs
 songsCurrentInit =
-    [ Song "Charlie" "Chan"
-    , Song "Alice" "Wonderland"
-    , Song "Dave" "Brubeck"
-    , Song "Frank" "Diary"
-    , Song "Edger" "A. Poe"
-    ]
-
-
-songsLikeInit : Songs
-songsLikeInit =
-    [ Song "Bob" "Highway 51 Revisited"
-    , Song "Alice" "Wonderland"
-    ]
+    List.repeat songsCurrentCountMax songEmpty
 
 
 
@@ -115,8 +122,14 @@ songsLikeInit =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.overallState == Idle then
-        Sub.none
+    let
+        delaySeconds : Float
+        delaySeconds =
+            20.0
+    in
+    case model.overallState of
+        HaveActiveLikes ->
+            Time.every (delaySeconds * 1000.0) GotTimeTick
 
-    else
-        Time.every (20 * 1000) GotTimeTick
+        _ ->
+            Sub.none

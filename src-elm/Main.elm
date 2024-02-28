@@ -76,39 +76,80 @@ update msg model =
 
                 Ok songsCurrent ->
                     let
+                        commands : Cmd M.Msg
+                        commands =
+                            Cmd.none
+
                         ignored =
                             Debug.log "songsCurrent" songsCurrent
+
+                        overallStateNew : M.OverallState
+                        overallStateNew =
+                            let
+                                activeLikesPresent : Bool
+                                activeLikesPresent =
+                                    List.any
+                                        (\x -> List.member x songsCurrent)
+                                        model.songsLike
+                            in
+                            if activeLikesPresent then
+                                M.HaveActiveLikes
+
+                            else
+                                M.Idle
                     in
-                    ( { model | songsCurrent = songsCurrent }
-                    , Cmd.none
+                    ( { model
+                        | overallState = overallStateNew
+                        , songsCurrent = songsCurrent
+                      }
+                    , commands
                     )
 
         M.GotTimeTick timePosix ->
             let
+                ignored =
+                    Debug.log "got time tick" 0
+            in
+            ( { model | overallState = M.Idle }
+            , Cmd.none
+            )
+
+        M.GotTouchEvent slotTouchIndex ->
+            let
+                contentType : String
                 contentType =
                     "application/x-www-form-urlencoded"
 
                 ignored =
-                    Debug.log "got time tick" 0
+                    Debug.log "got touch event" slotTouchIndex
 
+                payload : String
                 payload =
-                    "direction=l&song_artist=a+new&song_title=a+new+title"
+                    let
+                        artist : String
+                        artist =
+                            "a new artist"
+
+                        direction : String
+                        direction =
+                            "l"
+
+                        title : String
+                        title =
+                            "a new title"
+                    in
+                    "direction=" ++ direction ++ "&song_artist=" ++ artist ++ "&song_title=" ++ title
             in
-            ( { model | overallState = M.Idle }
+            ( model
             , Cmd.batch
-                [ Http.post
+                [ Http.get
+                    { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
+                    , url = "../playlist/dynamic/LatestFive.json"
+                    }
+                , Http.post
                     { body = Http.stringBody contentType payload
                     , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
                     , url = "../playlist/append.json"
                     }
-                , Http.get
-                    { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
-                    , url = "../playlist/dynamic/LatestFive.json"
-                    }
                 ]
-            )
-
-        M.GotTouchEvent ->
-            ( model
-            , Cmd.none
             )

@@ -2,36 +2,39 @@ module View exposing (view)
 
 import Html
 import Html.Attributes as A
+import Html.Events
+import Json.Decode as D
 import Model as M
-
-
-
--- VIEW
 
 
 view : M.Model -> Html.Html M.Msg
 view model =
     let
-        heartClasses : List M.Class
-        heartClasses =
+        tuples : List ( M.SlotTouchIndex, M.Class )
+        tuples =
             let
-                heartClass : Bool -> M.Class
-                heartClass like =
-                    if like then
-                        "like"
+                heartClasses : List M.Class
+                heartClasses =
+                    let
+                        heartClass : Bool -> M.Class
+                        heartClass like =
+                            if like then
+                                "like"
 
-                    else
-                        "aloof"
+                            else
+                                "aloof"
+                    in
+                    model.songsCurrent
+                        |> List.map (\x -> List.member x model.songsLike)
+                        |> List.map heartClass
             in
-            model.songsCurrent
-                |> List.map (\x -> List.member x model.songsLike)
-                |> List.map heartClass
+            List.indexedMap Tuple.pair heartClasses
+
+        viewSong : ( M.SlotTouchIndex, M.Class ) -> Html.Html M.Msg
+        viewSong ( index, class ) =
+            Html.div
+                [ Html.Events.onMouseUp (M.GotTouchEvent index) ]
+                [ Html.span [ A.class class ] [] ]
     in
     Html.main_ []
-        (List.map viewSong heartClasses)
-
-
-viewSong : M.Class -> Html.Html M.Msg
-viewSong class =
-    Html.div []
-        [ Html.span [ A.class class ] [] ]
+        (List.map viewSong tuples)
