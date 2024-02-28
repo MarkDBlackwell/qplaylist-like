@@ -13,9 +13,22 @@ The constrained type variables are:
   https://guide.elm-lang.org/types/reading_types
 
 See:
-https://elm-lang.org/examples/clock
-https://discourse.elm-lang.org/t/escaping-from-npm/7597
+https://betterprogramming.pub/elm-a-beautiful-language-for-web-development-bc06fd0b570f?gi=2418dd03a463
 https://dev.to/jjant/a-guide-to-native-code-and-effect-managers-in-elm-part-1-commands-1k6n
-https://korban.net/elm/json2elm/
-https://harfangk.github.io/2018/01/27/elm-function-operators.html
+https://discourse.elm-lang.org/t/escaping-from-npm/7597
+https://discourse.elm-lang.org/t/when-is-subscriptions-called/1524/3
 https://elm-lang.org/docs/syntax
+https://elm-lang.org/examples/clock
+https://elm-radio.com/episode/json-decoders/
+https://elmprogramming.com/
+https://elmprogramming.com/decoding-json-part-1.html
+https://elmprogramming.com/decoding-json-part-2.html
+https://github.com/izdi/elm-cheat-sheet
+https://harfangk.github.io/2018/01/27/elm-function-operators.html
+https://kindsonthegenius.com/elm/elm-working-with-button-and-textboxes/
+https://korban.net/elm/json2elm/
+https://package.elm-lang.org/packages/mpizenberg/elm-pointer-events/latest/
+https://package.elm-lang.org/packages/the-sett/elm-pointer/latest/
+https://stackoverflow.com/questions/38732946/does-elm-have-a-debugging-function-that-can-print-an-object-to-the-console/54260966#54260966
+https://thoughtbot.com/blog/decoding-json-structures-with-elm
+https://www.toptal.com/front-end/getting-started-elm-language
