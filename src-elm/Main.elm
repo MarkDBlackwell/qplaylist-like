@@ -43,12 +43,12 @@ songJsonDecoder =
 update : M.Msg -> M.Model -> ( M.Model, Cmd M.Msg )
 update msg model =
     case msg of
-        M.GotAppendResponse resultAppend ->
-            case resultAppend of
+        M.GotAppendResponse appendResult ->
+            case appendResult of
                 Err err ->
                     let
                         ignored =
-                            Debug.log "resultAppend error" err
+                            Debug.log "appendResult error" err
                     in
                     ( model
                     , Cmd.none
@@ -63,12 +63,12 @@ update msg model =
                     , Cmd.none
                     )
 
-        M.GotSongsResponse resultSongs ->
-            case resultSongs of
+        M.GotSongsCurrentResponse songsCurrentResult ->
+            case songsCurrentResult of
                 Err err ->
                     let
                         ignored =
-                            Debug.log "resultSongs error" err
+                            Debug.log "songsCurrentResult error" err
                     in
                     ( model
                     , Cmd.none
@@ -102,7 +102,7 @@ update msg model =
                     , url = "../playlist/append.json"
                     }
                 , Http.get
-                    { expect = Http.expectJson M.GotSongsResponse latestFiveJsonDecoder
+                    { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
                     , url = "../playlist/dynamic/LatestFive.json"
                     }
                 ]
