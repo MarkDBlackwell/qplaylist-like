@@ -99,11 +99,11 @@ update msg model =
                 [ Http.post
                     { body = Http.stringBody contentType payload
                     , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
-                    , url = "append.json"
+                    , url = "../playlist/append.json"
                     }
                 , Http.get
                     { expect = Http.expectJson M.GotSongsResponse latestFiveJsonDecoder
-                    , url = "dynamic/LatestFive.json"
+                    , url = "../playlist/dynamic/LatestFive.json"
                     }
                 ]
             )

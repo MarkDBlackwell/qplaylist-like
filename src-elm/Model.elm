@@ -106,4 +106,4 @@ songsLikeInit =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 10000 GotTimeTick
+    Time.every (30 * 1000) GotTimeTick
