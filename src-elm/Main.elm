@@ -7,15 +7,15 @@ import Model as M
 import View
 
 
-appendJsonDecoder : D.Decoder String
+appendJsonDecoder : D.Decoder M.AppendResponseString
 appendJsonDecoder =
-    D.map (M.AppendJsonRoot >> .response)
+    D.map (.response << M.AppendJsonRoot)
         (D.field "response" D.string)
 
 
 latestFiveJsonDecoder : D.Decoder M.Songs
 latestFiveJsonDecoder =
-    D.map (M.LatestFiveJsonRoot >> .latestFive)
+    D.map (List.take M.songsCurrentCountMax << .latestFive << M.LatestFiveJsonRoot)
         (D.field "latestFive" <| D.list songJsonDecoder)
 
 
@@ -54,10 +54,10 @@ update msg model =
                     , Cmd.none
                     )
 
-                Ok appendJsonRoot ->
+                Ok appendResponseString ->
                     let
                         ignored =
-                            Debug.log "appendJsonRoot" appendJsonRoot
+                            Debug.log "appendResponseString" appendResponseString
                     in
                     ( model
                     , Cmd.none
@@ -74,12 +74,12 @@ update msg model =
                     , Cmd.none
                     )
 
-                Ok latestFiveJsonRoot ->
+                Ok songsCurrent ->
                     let
                         ignored =
-                            Debug.log "latestFiveJsonRoot" latestFiveJsonRoot
+                            Debug.log "songsCurrent" songsCurrent
                     in
-                    ( model
+                    ( { model | songsCurrent = songsCurrent }
                     , Cmd.none
                     )
 

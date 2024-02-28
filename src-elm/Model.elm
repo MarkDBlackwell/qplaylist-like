@@ -9,6 +9,10 @@ type alias AppendJsonRoot =
     { response : String }
 
 
+type alias AppendResponseString =
+    String
+
+
 type alias Artist =
     String
 
@@ -49,7 +53,7 @@ type alias Title =
 
 
 type Msg
-    = GotAppendResponse (Result Http.Error String)
+    = GotAppendResponse (Result Http.Error AppendResponseString)
     | GotSongsResponse (Result Http.Error Songs)
     | GotTimeTick Time.Posix
     | GotTouchEvent
@@ -81,6 +85,11 @@ init _ =
       }
     , cmdMsg2Cmd GotTouchEvent
     )
+
+
+songsCurrentCountMax : Int
+songsCurrentCountMax =
+    5
 
 
 songsCurrentInit : Songs
