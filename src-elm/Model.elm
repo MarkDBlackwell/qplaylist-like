@@ -74,7 +74,7 @@ cmdMsg2Cmd msg =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { likesToProcess = []
-      , overallState = Idle
+      , overallState = HaveActiveLikes
       , songsCurrent = songsCurrentInit
       , songsLike = songsLikeInit
       , unlikesToProcess = []
@@ -106,4 +106,8 @@ songsLikeInit =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every (30 * 1000) GotTimeTick
+    if model.overallState == Idle then
+        Sub.none
+
+    else
+        Time.every (20 * 1000) GotTimeTick

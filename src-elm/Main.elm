@@ -94,7 +94,7 @@ update msg model =
                 payload =
                     "direction=l&song_artist=a+new&song_title=a+new+title"
             in
-            ( model
+            ( { model | overallState = M.Idle }
             , Cmd.batch
                 [ Http.post
                     { body = Http.stringBody contentType payload
