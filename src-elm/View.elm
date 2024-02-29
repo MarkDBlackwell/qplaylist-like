@@ -17,8 +17,8 @@ view model =
                 heartClasses : List M.Class
                 heartClasses =
                     let
-                        heartClass : Bool -> M.Class
-                        heartClass like =
+                        class : Bool -> M.Class
+                        class like =
                             if like then
                                 "like"
 
@@ -31,7 +31,7 @@ view model =
                     in
                     model.songsCurrent
                         |> List.map (\x -> List.member x songsLikeList)
-                        |> List.map heartClass
+                        |> List.map class
             in
             List.indexedMap Tuple.pair heartClasses
 

@@ -9,8 +9,8 @@ import Model as M
 import View
 
 
-append : M.DirectionLike -> M.Song -> Cmd M.Msg
-append directionLike song =
+appendPost : M.DirectionLike -> M.Song -> Cmd M.Msg
+appendPost directionLike song =
     let
         contentType : String
         contentType =
@@ -133,16 +133,25 @@ update msg model =
                                     List.concat
                                         [ Set.toList songsToUnlike
                                             |> List.map
-                                                (append M.SendUnlike)
+                                                (appendPost M.SendUnlike)
                                         , Set.toList songsToLike
                                             |> List.map
-                                                (append M.SendLike)
+                                                (appendPost M.SendLike)
                                         ]
                             in
                             Cmd.batch flat
 
                         ignored =
                             Debug.log "songsCurrent" songsCurrent
+
+                        ignoredSlotsSelectedSongs =
+                            Debug.log "slotsSelectedSongs" slotsSelectedSongs
+
+                        ignoredSongsToLike =
+                            Debug.log "songsToLike" songsToLike
+
+                        ignoredSongsToUnlike =
+                            Debug.log "songsToUnlike" songsToUnlike
 
                         overallState : M.OverallState
                         overallState =
@@ -188,11 +197,11 @@ update msg model =
 
                         songsToLike : M.SongsLike
                         songsToLike =
-                            Set.diff model.songsLike slotsSelectedSongsSet
+                            Set.diff slotsSelectedSongsSet model.songsLike
 
                         songsToUnlike : M.SongsLike
                         songsToUnlike =
-                            Set.diff slotsSelectedSongsSet model.songsLike
+                            Set.intersect slotsSelectedSongsSet model.songsLike
                     in
                     ( { model
                         | overallState = overallState
@@ -208,14 +217,20 @@ update msg model =
                 command : Cmd M.Msg
                 command =
                     case overallState of
-                        M.Idle ->
-                            Cmd.none
-
                         M.HaveActiveLikes ->
                             latestFiveGet
 
+                        M.Idle ->
+                            Cmd.none
+
                 ignored =
                     Debug.log "got time tick" 0
+
+                ignoredOverallState =
+                    Debug.log "overallState" overallState
+
+                ignoredSlotsSelected =
+                    Debug.log "model.slotsSelected" model.slotsSelected
 
                 overallState : M.OverallState
                 overallState =
@@ -226,13 +241,13 @@ update msg model =
                                 (\x -> List.member x model.songsCurrent)
                                 songsLikeList
 
-                        slotsSelectedAny : Bool
-                        slotsSelectedAny =
-                            Array.foldl (||) False model.slotsSelected
-
                         songsLikeList : M.Songs
                         songsLikeList =
                             Set.toList model.songsLike
+
+                        slotsSelectedAny : Bool
+                        slotsSelectedAny =
+                            Array.foldl (||) False model.slotsSelected
                     in
                     if activeLikePresent || slotsSelectedAny then
                         M.HaveActiveLikes
@@ -256,6 +271,9 @@ update msg model =
 
                 ignored =
                     Debug.log "got touch event" slotTouchIndex
+
+                ignoredOverallState =
+                    Debug.log "overallState" overallState
 
                 ignoredSlotsSelected =
                     Debug.log "slotsSelected" slotsSelected
