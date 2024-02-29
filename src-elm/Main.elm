@@ -1,9 +1,11 @@
 module Main exposing (main)
 
+import Array
 import Browser
 import Http
 import Json.Decode as D
 import Model as M
+import Set
 import View
 
 
@@ -76,80 +78,216 @@ update msg model =
 
                 Ok songsCurrent ->
                     let
-                        commands : Cmd M.Msg
-                        commands =
+                        command : Cmd M.Msg
+                        command =
                             Cmd.none
 
                         ignored =
                             Debug.log "songsCurrent" songsCurrent
 
-                        overallStateNew : M.OverallState
-                        overallStateNew =
+                        likesToProcess : M.Songs
+                        likesToProcess =
+                            model.likesToProcess
+
+                        overallState : M.OverallState
+                        overallState =
                             let
-                                activeLikesPresent : Bool
-                                activeLikesPresent =
+                                activeLikePresent : Bool
+                                activeLikePresent =
                                     List.any
                                         (\x -> List.member x songsCurrent)
-                                        model.songsLike
+                                        songsLikeList
+
+                                slotsSelectedAny : Bool
+                                slotsSelectedAny =
+                                    Array.foldl (||) False model.slotsSelected
                             in
-                            if activeLikesPresent then
+                            if activeLikePresent || slotsSelectedAny then
                                 M.HaveActiveLikes
 
                             else
                                 M.Idle
+
+                        slotsSelected : M.SlotsSelected
+                        slotsSelected =
+                            model.slotsSelected
+
+                        songsLike : M.SongsLike
+                        songsLike =
+                            model.songsLike
+
+                        songsLikeList : M.Songs
+                        songsLikeList =
+                            Set.toList songsLike
+
+                        unlikesToProcess : M.Songs
+                        unlikesToProcess =
+                            model.unlikesToProcess
                     in
                     ( { model
-                        | overallState = overallStateNew
+                        | likesToProcess = likesToProcess
+                        , overallState = overallState
+                        , slotsSelected = slotsSelected
                         , songsCurrent = songsCurrent
+                        , songsLike = songsLike
+                        , unlikesToProcess = unlikesToProcess
                       }
-                    , commands
+                    , command
                     )
 
         M.GotTimeTick timePosix ->
             let
+                command : Cmd M.Msg
+                command =
+                    case overallState of
+                        M.Idle ->
+                            Cmd.none
+
+                        M.HaveActiveLikes ->
+                            Http.get
+                                { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
+                                , url = "../playlist/dynamic/LatestFive.json"
+                                }
+
                 ignored =
                     Debug.log "got time tick" 0
+
+                overallState : M.OverallState
+                overallState =
+                    let
+                        activeLikePresent : Bool
+                        activeLikePresent =
+                            List.any
+                                (\x -> List.member x model.songsCurrent)
+                                songsLikeList
+
+                        slotsSelectedAny : Bool
+                        slotsSelectedAny =
+                            Array.foldl (||) False model.slotsSelected
+
+                        songsLikeList : M.Songs
+                        songsLikeList =
+                            Set.toList model.songsLike
+                    in
+                    if activeLikePresent || slotsSelectedAny then
+                        M.HaveActiveLikes
+
+                    else
+                        M.Idle
             in
-            ( { model | overallState = M.Idle }
-            , Cmd.none
+            ( { model | overallState = overallState }
+            , command
             )
 
         M.GotTouchEvent slotTouchIndex ->
             let
-                contentType : String
-                contentType =
-                    "application/x-www-form-urlencoded"
+                command : Cmd M.Msg
+                command =
+                    if slotsSelectedAny then
+                        Http.get
+                            { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
+                            , url = "../playlist/dynamic/LatestFive.json"
+                            }
+
+                    else
+                        Cmd.none
 
                 ignored =
                     Debug.log "got touch event" slotTouchIndex
 
-                payload : String
-                payload =
+                overallState : M.OverallState
+                overallState =
                     let
-                        artist : String
-                        artist =
-                            "a new artist"
+                        activeLikePresent : Bool
+                        activeLikePresent =
+                            List.any
+                                (\x -> List.member x model.songsCurrent)
+                                songsLikeList
 
-                        direction : String
-                        direction =
-                            "l"
-
-                        title : String
-                        title =
-                            "a new title"
+                        songsLikeList : M.Songs
+                        songsLikeList =
+                            Set.toList model.songsLike
                     in
-                    "direction=" ++ direction ++ "&song_artist=" ++ artist ++ "&song_title=" ++ title
+                    if activeLikePresent || slotsSelectedAny then
+                        M.HaveActiveLikes
+
+                    else
+                        M.Idle
+
+                slotsSelected : M.SlotsSelected
+                slotsSelected =
+                    let
+                        slotThis : Bool
+                        slotThis =
+                            Array.get slotTouchIndex model.slotsSelected
+                                |> Maybe.withDefault False
+                    in
+                    Array.set slotTouchIndex
+                        (not slotThis)
+                        model.slotsSelected
+
+                slotsSelectedAny : Bool
+                slotsSelectedAny =
+                    Array.foldl (||) False slotsSelected
             in
-            ( model
-            , Cmd.batch
-                [ Http.get
-                    { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
-                    , url = "../playlist/dynamic/LatestFive.json"
-                    }
-                , Http.post
-                    { body = Http.stringBody contentType payload
-                    , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
-                    , url = "../playlist/append.json"
-                    }
-                ]
+            ( { model
+                | overallState = overallState
+                , slotsSelected = slotsSelected
+              }
+            , command
             )
+
+
+
+{-
+   G O E S  S O M E W H E R E  E L S E ->
+       let
+           contentType : String
+           contentType =
+               "application/x-www-form-urlencoded"
+
+           ignored =
+               Debug.log "got touch event" slotTouchIndex
+
+           payload : String
+           payload =
+               let
+                   artist : String
+                   artist =
+                       "a new artist"
+
+                   direction : String
+                   direction =
+                       "l"
+
+                   title : String
+                   title =
+                       "a new title"
+               in
+               "direction=" ++ direction ++ "&song_artist=" ++ artist ++ "&song_title=" ++ title
+       in
+       ( model
+       , Cmd.batch
+           [ Http.get
+               { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
+               , url = "../playlist/dynamic/LatestFive.json"
+               }
+           , Http.post
+               { body = Http.stringBody contentType payload
+               , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
+               , url = "../playlist/append.json"
+               }
+           ]
+       )
+       , Cmd.batch
+           [ Http.get
+               { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
+               , url = "../playlist/dynamic/LatestFive.json"
+               }
+           , Http.post
+               { body = Http.stringBody contentType payload
+               , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
+               , url = "../playlist/append.json"
+               }
+           ]
+-}

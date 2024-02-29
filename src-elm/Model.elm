@@ -1,6 +1,8 @@
 module Model exposing (..)
 
+import Array
 import Http
+import Set
 import Task
 import Time
 
@@ -28,15 +30,15 @@ type alias LatestFiveJsonRoot =
 type alias Model =
     { likesToProcess : Songs
     , overallState : OverallState
-    , selectedSlotsToProcess : SelectedSlotsToProcess
+    , slotsSelected : SlotsSelected
     , songsCurrent : Songs
-    , songsLike : Songs
+    , songsLike : SongsLike
     , unlikesToProcess : Songs
     }
 
 
-type alias SelectedSlotsToProcess =
-    List SlotTouchIndex
+type alias SlotsSelected =
+    Array.Array Bool
 
 
 type alias SlotTouchIndex =
@@ -51,6 +53,10 @@ type alias Song =
 
 type alias Songs =
     List Song
+
+
+type alias SongsLike =
+    Set.Set Song
 
 
 type alias StringJson =
@@ -97,13 +103,18 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { likesToProcess = []
       , overallState = Idle
-      , selectedSlotsToProcess = []
+      , slotsSelected = slotsSelectedInit
       , songsCurrent = songsCurrentInit
-      , songsLike = []
+      , songsLike = songsLikeInit
       , unlikesToProcess = []
       }
     , Cmd.none
     )
+
+
+slotsSelectedInit : SlotsSelected
+slotsSelectedInit =
+    Array.repeat songsCurrentCountMax False
 
 
 songEmpty : Song
@@ -114,6 +125,11 @@ songEmpty =
 songsCurrentInit : Songs
 songsCurrentInit =
     List.repeat songsCurrentCountMax songEmpty
+
+
+songsLikeInit : SongsLike
+songsLikeInit =
+    Set.empty
 
 
 

@@ -5,6 +5,7 @@ import Html.Attributes as A
 import Html.Events
 import Json.Decode as D
 import Model as M
+import Set
 
 
 view : M.Model -> Html.Html M.Msg
@@ -23,9 +24,13 @@ view model =
 
                             else
                                 "aloof"
+
+                        songsLikeList : M.Songs
+                        songsLikeList =
+                            Set.toList model.songsLike
                     in
                     model.songsCurrent
-                        |> List.map (\x -> List.member x model.songsLike)
+                        |> List.map (\x -> List.member x songsLikeList)
                         |> List.map heartClass
             in
             List.indexedMap Tuple.pair heartClasses
