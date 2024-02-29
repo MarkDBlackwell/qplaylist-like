@@ -27,6 +27,9 @@ https://github.com/izdi/elm-cheat-sheet
 https://harfangk.github.io/2018/01/27/elm-function-operators.html
 https://kindsonthegenius.com/elm/elm-working-with-button-and-textboxes/
 https://korban.net/elm/json2elm/
+https://package.elm-lang.org/packages/elm/core/latest/Platform
+https://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd
+https://package.elm-lang.org/packages/elm/core/latest/Platform-Sub
 https://package.elm-lang.org/packages/mpizenberg/elm-pointer-events/latest/
 https://package.elm-lang.org/packages/the-sett/elm-pointer/latest/
 https://stackoverflow.com/questions/38732946/does-elm-have-a-debugging-function-that-can-print-an-object-to-the-console/54260966#54260966
