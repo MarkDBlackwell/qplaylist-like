@@ -1,11 +1,11 @@
 module View exposing (view)
 
+import AssocSet as Set
 import Html
 import Html.Attributes as A
 import Html.Events
 import Json.Decode as D
 import Model as M
-import Set
 
 
 view : M.Model -> Html.Html M.Msg

@@ -1,18 +1,65 @@
 module Main exposing (main)
 
 import Array
+import AssocSet as Set
 import Browser
 import Http
 import Json.Decode as D
 import Model as M
-import Set
 import View
+
+
+append : M.DirectionLike -> M.Song -> Cmd M.Msg
+append directionLike song =
+    let
+        contentType : String
+        contentType =
+            "application/x-www-form-urlencoded"
+
+        direction : String
+        direction =
+            case directionLike of
+                M.SendLike ->
+                    "l"
+
+                M.SendUnlike ->
+                    "u"
+
+        payload : String
+        payload =
+            String.concat
+                [ "direction"
+                , "="
+                , direction
+                , "&"
+                , "song_artist"
+                , "="
+                , song.artist
+                , "&"
+                , "song_title"
+                , "="
+                , song.title
+                ]
+    in
+    Http.post
+        { body = Http.stringBody contentType payload
+        , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
+        , url = "../playlist/append.json"
+        }
 
 
 appendJsonDecoder : D.Decoder M.AppendResponseString
 appendJsonDecoder =
     D.map (.response << M.AppendJsonRoot)
         (D.field "response" D.string)
+
+
+latestFiveGet : Cmd M.Msg
+latestFiveGet =
+    Http.get
+        { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
+        , url = "../playlist/dynamic/LatestFiveHD2.json"
+        }
 
 
 latestFiveJsonDecoder : D.Decoder M.Songs
@@ -78,16 +125,24 @@ update msg model =
 
                 Ok songsCurrent ->
                     let
-                        command : Cmd M.Msg
-                        command =
-                            Cmd.none
+                        commands : Cmd M.Msg
+                        commands =
+                            let
+                                flat : List (Cmd M.Msg)
+                                flat =
+                                    List.concat
+                                        [ Set.toList songsToUnlike
+                                            |> List.map
+                                                (append M.SendUnlike)
+                                        , Set.toList songsToLike
+                                            |> List.map
+                                                (append M.SendLike)
+                                        ]
+                            in
+                            Cmd.batch flat
 
                         ignored =
                             Debug.log "songsCurrent" songsCurrent
-
-                        likesToProcess : M.Songs
-                        likesToProcess =
-                            model.likesToProcess
 
                         overallState : M.OverallState
                         overallState =
@@ -108,31 +163,44 @@ update msg model =
                             else
                                 M.Idle
 
-                        slotsSelected : M.SlotsSelected
-                        slotsSelected =
-                            model.slotsSelected
+                        slotsSelectedList : M.SlotsSelectedList
+                        slotsSelectedList =
+                            Array.toList model.slotsSelected
+
+                        slotsSelectedSongs : M.Songs
+                        slotsSelectedSongs =
+                            List.map2 Tuple.pair slotsSelectedList songsCurrent
+                                |> List.filter Tuple.first
+                                |> List.map Tuple.second
+
+                        slotsSelectedSongsSet : M.SongsLike
+                        slotsSelectedSongsSet =
+                            Set.fromList slotsSelectedSongs
 
                         songsLike : M.SongsLike
                         songsLike =
-                            model.songsLike
+                            Set.diff model.songsLike songsToUnlike
+                                |> Set.union songsToLike
 
                         songsLikeList : M.Songs
                         songsLikeList =
-                            Set.toList songsLike
+                            Set.toList model.songsLike
 
-                        unlikesToProcess : M.Songs
-                        unlikesToProcess =
-                            model.unlikesToProcess
+                        songsToLike : M.SongsLike
+                        songsToLike =
+                            Set.diff model.songsLike slotsSelectedSongsSet
+
+                        songsToUnlike : M.SongsLike
+                        songsToUnlike =
+                            Set.diff slotsSelectedSongsSet model.songsLike
                     in
                     ( { model
-                        | likesToProcess = likesToProcess
-                        , overallState = overallState
-                        , slotsSelected = slotsSelected
+                        | overallState = overallState
+                        , slotsSelected = M.slotsSelectedInit
                         , songsCurrent = songsCurrent
                         , songsLike = songsLike
-                        , unlikesToProcess = unlikesToProcess
                       }
-                    , command
+                    , commands
                     )
 
         M.GotTimeTick timePosix ->
@@ -144,10 +212,7 @@ update msg model =
                             Cmd.none
 
                         M.HaveActiveLikes ->
-                            Http.get
-                                { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
-                                , url = "../playlist/dynamic/LatestFive.json"
-                                }
+                            latestFiveGet
 
                 ignored =
                     Debug.log "got time tick" 0
@@ -184,16 +249,16 @@ update msg model =
                 command : Cmd M.Msg
                 command =
                     if slotsSelectedAny then
-                        Http.get
-                            { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
-                            , url = "../playlist/dynamic/LatestFive.json"
-                            }
+                        latestFiveGet
 
                     else
                         Cmd.none
 
                 ignored =
                     Debug.log "got touch event" slotTouchIndex
+
+                ignoredSlotsSelected =
+                    Debug.log "slotsSelected" slotsSelected
 
                 overallState : M.OverallState
                 overallState =
@@ -268,10 +333,7 @@ update msg model =
        in
        ( model
        , Cmd.batch
-           [ Http.get
-               { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
-               , url = "../playlist/dynamic/LatestFive.json"
-               }
+           [ latestFiveGet
            , Http.post
                { body = Http.stringBody contentType payload
                , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
@@ -280,10 +342,7 @@ update msg model =
            ]
        )
        , Cmd.batch
-           [ Http.get
-               { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
-               , url = "../playlist/dynamic/LatestFive.json"
-               }
+           [ latestFiveGet
            , Http.post
                { body = Http.stringBody contentType payload
                , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder

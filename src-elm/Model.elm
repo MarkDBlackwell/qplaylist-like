@@ -1,8 +1,8 @@
 module Model exposing (..)
 
 import Array
+import AssocSet as Set
 import Http
-import Set
 import Task
 import Time
 
@@ -28,17 +28,19 @@ type alias LatestFiveJsonRoot =
 
 
 type alias Model =
-    { likesToProcess : Songs
-    , overallState : OverallState
+    { overallState : OverallState
     , slotsSelected : SlotsSelected
     , songsCurrent : Songs
     , songsLike : SongsLike
-    , unlikesToProcess : Songs
     }
 
 
 type alias SlotsSelected =
     Array.Array Bool
+
+
+type alias SlotsSelectedList =
+    List Bool
 
 
 type alias SlotTouchIndex =
@@ -65,6 +67,11 @@ type alias StringJson =
 
 type alias Title =
     String
+
+
+type DirectionLike
+    = SendLike
+    | SendUnlike
 
 
 type Msg
@@ -101,12 +108,10 @@ songsCurrentCountMax =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { likesToProcess = []
-      , overallState = Idle
+    ( { overallState = Idle
       , slotsSelected = slotsSelectedInit
       , songsCurrent = songsCurrentInit
       , songsLike = songsLikeInit
-      , unlikesToProcess = []
       }
     , Cmd.none
     )
