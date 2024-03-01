@@ -86,15 +86,16 @@ type OverallState
     | Idle
 
 
-cmdMsg2Cmd : Msg -> Cmd Msg
-cmdMsg2Cmd msg =
-    --See:
-    --  http://github.com/billstclair/elm-dynamodb/blob/7ac30d60b98fbe7ea253be13f5f9df4d9c661b92/src/DynamoBackend.elm
-    --For wrapping a message as a Cmd:
-    msg
-        |> Task.succeed
-        |> Task.perform
-            identity
+
+--cmdMsg2Cmd : Msg -> Cmd Msg
+--cmdMsg2Cmd msg =
+--See:
+--  http://github.com/billstclair/elm-dynamodb/blob/7ac30d60b98fbe7ea253be13f5f9df4d9c661b92/src/DynamoBackend.elm
+--For wrapping a message as a Cmd:
+--msg
+--|> Task.succeed
+--|> Task.perform
+--identity
 
 
 songsCurrentCountMax : Int

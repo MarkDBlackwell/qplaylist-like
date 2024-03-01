@@ -104,10 +104,10 @@ update msg model =
                     )
 
                 Ok appendResponseString ->
-                    let
-                        ignored =
-                            Debug.log "appendResponseString" appendResponseString
-                    in
+                    --let
+                    --ignored =
+                    --Debug.log "appendResponseString" appendResponseString
+                    --in
                     ( model
                     , Cmd.none
                     )
@@ -141,18 +141,14 @@ update msg model =
                             in
                             Cmd.batch flat
 
-                        ignored =
-                            Debug.log "songsCurrent" songsCurrent
-
-                        ignoredSlotsSelectedSongs =
-                            Debug.log "slotsSelectedSongs" slotsSelectedSongs
-
-                        ignoredSongsToLike =
-                            Debug.log "songsToLike" songsToLike
-
-                        ignoredSongsToUnlike =
-                            Debug.log "songsToUnlike" songsToUnlike
-
+                        --ignored =
+                        --Debug.log "songsCurrent" songsCurrent
+                        --ignoredSlotsSelectedSongs =
+                        --Debug.log "slotsSelectedSongs" slotsSelectedSongs
+                        --ignoredSongsToLike =
+                        --Debug.log "songsToLike" songsToLike
+                        --ignoredSongsToUnlike =
+                        --Debug.log "songsToUnlike" songsToUnlike
                         overallState : M.OverallState
                         overallState =
                             let
@@ -223,15 +219,12 @@ update msg model =
                         M.Idle ->
                             Cmd.none
 
-                ignored =
-                    Debug.log "got time tick" 0
-
-                ignoredOverallState =
-                    Debug.log "overallState" overallState
-
-                ignoredSlotsSelected =
-                    Debug.log "model.slotsSelected" model.slotsSelected
-
+                --ignored =
+                --Debug.log "got time tick" 0
+                --ignoredOverallState =
+                --Debug.log "overallState" overallState
+                --ignoredSlotsSelected =
+                --Debug.log "model.slotsSelected" model.slotsSelected
                 overallState : M.OverallState
                 overallState =
                     let
@@ -269,15 +262,12 @@ update msg model =
                     else
                         Cmd.none
 
-                ignored =
-                    Debug.log "got touch event" slotTouchIndex
-
-                ignoredOverallState =
-                    Debug.log "overallState" overallState
-
-                ignoredSlotsSelected =
-                    Debug.log "slotsSelected" slotsSelected
-
+                --ignored =
+                --Debug.log "got touch event" slotTouchIndex
+                --ignoredOverallState =
+                --Debug.log "overallState" overallState
+                --ignoredSlotsSelected =
+                --Debug.log "slotsSelected" slotsSelected
                 overallState : M.OverallState
                 overallState =
                     let
@@ -319,52 +309,3 @@ update msg model =
               }
             , command
             )
-
-
-
-{-
-   G O E S  S O M E W H E R E  E L S E ->
-       let
-           contentType : String
-           contentType =
-               "application/x-www-form-urlencoded"
-
-           ignored =
-               Debug.log "got touch event" slotTouchIndex
-
-           payload : String
-           payload =
-               let
-                   artist : String
-                   artist =
-                       "a new artist"
-
-                   direction : String
-                   direction =
-                       "l"
-
-                   title : String
-                   title =
-                       "a new title"
-               in
-               "direction=" ++ direction ++ "&song_artist=" ++ artist ++ "&song_title=" ++ title
-       in
-       ( model
-       , Cmd.batch
-           [ latestFiveGet
-           , Http.post
-               { body = Http.stringBody contentType payload
-               , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
-               , url = "../playlist/append.json"
-               }
-           ]
-       )
-       , Cmd.batch
-           [ latestFiveGet
-           , Http.post
-               { body = Http.stringBody contentType payload
-               , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
-               , url = "../playlist/append.json"
-               }
-           ]
--}
