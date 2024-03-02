@@ -3,6 +3,6 @@ verbose
 binary
 cd /transfer
 pwd
-lcd tmp
-put Main.js
+put tmp/Main.js Main.js
+put src/SetUp.js SetUp.js
 quit
