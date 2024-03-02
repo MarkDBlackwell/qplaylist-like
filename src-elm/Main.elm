@@ -9,6 +9,12 @@ import Model as M
 import View
 
 
+appendJsonDecoder : D.Decoder M.AppendResponseString
+appendJsonDecoder =
+    D.map (.response << M.AppendJsonRoot)
+        (D.field "response" D.string)
+
+
 appendPost : M.DirectionLike -> M.Song -> Cmd M.Msg
 appendPost directionLike song =
     let
@@ -16,59 +22,71 @@ appendPost directionLike song =
         contentType =
             "application/x-www-form-urlencoded"
 
-        direction : String
-        direction =
-            case directionLike of
-                M.SendLike ->
-                    "l"
-
-                M.SendUnlike ->
-                    "u"
-
         payload : String
         payload =
-            String.concat
-                [ "direction"
-                , "="
-                , direction
-                , "&"
-                , "song_artist"
-                , "="
-                , song.artist
-                , "&"
-                , "song_title"
-                , "="
-                , song.title
-                ]
+            let
+                assignments : List String
+                assignments =
+                    let
+                        pairs : List ( String, String )
+                        pairs =
+                            let
+                                direction : String
+                                direction =
+                                    case directionLike of
+                                        M.SendLike ->
+                                            "l"
+
+                                        M.SendUnlike ->
+                                            "u"
+                            in
+                            [ ( "direction", direction )
+                            , ( "song_artist", song.artist )
+                            , ( "song_title", song.title )
+                            ]
+                    in
+                    List.map
+                        (\( x, y ) -> String.concat [ x, "=", y ])
+                        pairs
+            in
+            List.intersperse "&" assignments
+                |> String.concat
+
+        url : String
+        url =
+            "https://wtmd.org/like/append.php"
     in
     Http.post
         { body = Http.stringBody contentType payload
         , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
-        , url = "../playlist/append.json"
+        , url = url
         }
 
 
-appendJsonDecoder : D.Decoder M.AppendResponseString
-appendJsonDecoder =
-    D.map (.response << M.AppendJsonRoot)
-        (D.field "response" D.string)
-
-
-latestFiveGet : Cmd M.Msg
-latestFiveGet =
+latestFiveGet : M.Model -> Cmd M.Msg
+latestFiveGet model =
+    let
+        url : String
+        url =
+            String.concat
+                [ "../playlist/dynamic/LatestFive"
+                , model.channel
+                , ".json"
+                ]
+    in
     Http.get
-        { expect = Http.expectJson M.GotSongsCurrentResponse latestFiveJsonDecoder
-        , url = "../playlist/dynamic/LatestFiveHD2.json"
+        { expect = Http.expectJson M.GotSongsResponse latestFiveJsonDecoder
+        , url = url
         }
 
 
 latestFiveJsonDecoder : D.Decoder M.Songs
 latestFiveJsonDecoder =
-    D.map (List.take M.songsCurrentCountMax << .latestFive << M.LatestFiveJsonRoot)
+    D.map (List.take M.slotsCount << .latestFive << M.LatestFiveJsonRoot)
         (D.field "latestFive" <| D.list songJsonDecoder)
 
 
-main : Program () M.Model M.Msg
+main : Program M.Channel M.Model M.Msg
 main =
     Browser.element
         { init = M.init
@@ -104,20 +122,16 @@ update msg model =
                     )
 
                 Ok appendResponseString ->
-                    --let
-                    --ignored =
-                    --Debug.log "appendResponseString" appendResponseString
-                    --in
                     ( model
                     , Cmd.none
                     )
 
-        M.GotSongsCurrentResponse songsCurrentResult ->
-            case songsCurrentResult of
+        M.GotSongsResponse songsResult ->
+            case songsResult of
                 Err err ->
                     let
                         ignored =
-                            Debug.log "songsCurrentResult error" err
+                            Debug.log "songsResult error" err
                     in
                     ( model
                     , Cmd.none
@@ -128,76 +142,59 @@ update msg model =
                         commands : Cmd M.Msg
                         commands =
                             let
-                                flat : List (Cmd M.Msg)
-                                flat =
+                                posts : List (Cmd M.Msg)
+                                posts =
                                     List.concat
-                                        [ Set.toList songsToUnlike
-                                            |> List.map
-                                                (appendPost M.SendUnlike)
-                                        , Set.toList songsToLike
-                                            |> List.map
-                                                (appendPost M.SendLike)
+                                        [ List.map
+                                            (appendPost M.SendUnlike)
+                                            (Set.toList songsToUnlike)
+                                        , List.map
+                                            (appendPost M.SendLike)
+                                            (Set.toList songsToLike)
                                         ]
                             in
-                            Cmd.batch flat
+                            Cmd.batch posts
 
-                        --ignored =
-                        --Debug.log "songsCurrent" songsCurrent
-                        --ignoredSlotsSelectedSongs =
-                        --Debug.log "slotsSelectedSongs" slotsSelectedSongs
-                        --ignoredSongsToLike =
-                        --Debug.log "songsToLike" songsToLike
-                        --ignoredSongsToUnlike =
-                        --Debug.log "songsToUnlike" songsToUnlike
                         overallState : M.OverallState
                         overallState =
                             let
-                                activeLikePresent : Bool
-                                activeLikePresent =
-                                    List.any
-                                        (\x -> List.member x songsCurrent)
-                                        songsLikeList
-
                                 slotsSelectedAny : Bool
                                 slotsSelectedAny =
-                                    Array.foldl (||) False model.slotsSelected
+                                    model.slotsSelected /= M.slotsSelectedInit
+
+                                songsLikeAny : Bool
+                                songsLikeAny =
+                                    List.any
+                                        (\song -> List.member song songsCurrent)
+                                        (Set.toList model.songsLike)
                             in
-                            if activeLikePresent || slotsSelectedAny then
+                            if songsLikeAny || slotsSelectedAny then
                                 M.HaveActiveLikes
 
                             else
                                 M.Idle
 
-                        slotsSelectedList : M.SlotsSelectedList
-                        slotsSelectedList =
-                            Array.toList model.slotsSelected
-
-                        slotsSelectedSongs : M.Songs
-                        slotsSelectedSongs =
-                            List.map2 Tuple.pair slotsSelectedList songsCurrent
-                                |> List.filter Tuple.first
-                                |> List.map Tuple.second
-
-                        slotsSelectedSongsSet : M.SongsLike
-                        slotsSelectedSongsSet =
-                            Set.fromList slotsSelectedSongs
-
                         songsLike : M.SongsLike
                         songsLike =
-                            Set.diff model.songsLike songsToUnlike
+                            songsToUnlike
+                                |> Set.diff model.songsLike
                                 |> Set.union songsToLike
-
-                        songsLikeList : M.Songs
-                        songsLikeList =
-                            Set.toList model.songsLike
 
                         songsToLike : M.SongsLike
                         songsToLike =
-                            Set.diff slotsSelectedSongsSet model.songsLike
+                            Set.diff songsToToggle model.songsLike
+
+                        songsToToggle : M.SongsLike
+                        songsToToggle =
+                            Array.toList model.slotsSelected
+                                |> List.map2 Tuple.pair songsCurrent
+                                |> List.filter Tuple.second
+                                |> List.map Tuple.first
+                                |> Set.fromList
 
                         songsToUnlike : M.SongsLike
                         songsToUnlike =
-                            Set.intersect slotsSelectedSongsSet model.songsLike
+                            Set.intersect songsToToggle model.songsLike
                     in
                     ( { model
                         | overallState = overallState
@@ -209,103 +206,22 @@ update msg model =
                     )
 
         M.GotTimeTick timePosix ->
-            let
-                command : Cmd M.Msg
-                command =
-                    case overallState of
-                        M.HaveActiveLikes ->
-                            latestFiveGet
-
-                        M.Idle ->
-                            Cmd.none
-
-                --ignored =
-                --Debug.log "got time tick" 0
-                --ignoredOverallState =
-                --Debug.log "overallState" overallState
-                --ignoredSlotsSelected =
-                --Debug.log "model.slotsSelected" model.slotsSelected
-                overallState : M.OverallState
-                overallState =
-                    let
-                        activeLikePresent : Bool
-                        activeLikePresent =
-                            List.any
-                                (\x -> List.member x model.songsCurrent)
-                                songsLikeList
-
-                        songsLikeList : M.Songs
-                        songsLikeList =
-                            Set.toList model.songsLike
-
-                        slotsSelectedAny : Bool
-                        slotsSelectedAny =
-                            Array.foldl (||) False model.slotsSelected
-                    in
-                    if activeLikePresent || slotsSelectedAny then
-                        M.HaveActiveLikes
-
-                    else
-                        M.Idle
-            in
-            ( { model | overallState = overallState }
-            , command
+            ( model
+              --A song in our liked set may have just started.
+            , latestFiveGet model
             )
 
         M.GotTouchEvent slotTouchIndex ->
             let
-                command : Cmd M.Msg
-                command =
-                    if slotsSelectedAny then
-                        latestFiveGet
-
-                    else
-                        Cmd.none
-
-                --ignored =
-                --Debug.log "got touch event" slotTouchIndex
-                --ignoredOverallState =
-                --Debug.log "overallState" overallState
-                --ignoredSlotsSelected =
-                --Debug.log "slotsSelected" slotsSelected
-                overallState : M.OverallState
-                overallState =
-                    let
-                        activeLikePresent : Bool
-                        activeLikePresent =
-                            List.any
-                                (\x -> List.member x model.songsCurrent)
-                                songsLikeList
-
-                        songsLikeList : M.Songs
-                        songsLikeList =
-                            Set.toList model.songsLike
-                    in
-                    if activeLikePresent || slotsSelectedAny then
-                        M.HaveActiveLikes
-
-                    else
-                        M.Idle
-
                 slotsSelected : M.SlotsSelected
                 slotsSelected =
-                    let
-                        slotThis : Bool
-                        slotThis =
-                            Array.get slotTouchIndex model.slotsSelected
-                                |> Maybe.withDefault False
-                    in
-                    Array.set slotTouchIndex
-                        (not slotThis)
+                    Array.indexedMap
+                        --Debounce, so prefer || over xor.
+                        (\index bool -> bool || index == slotTouchIndex)
                         model.slotsSelected
-
-                slotsSelectedAny : Bool
-                slotsSelectedAny =
-                    Array.foldl (||) False slotsSelected
             in
             ( { model
-                | overallState = overallState
-                , slotsSelected = slotsSelected
+                | slotsSelected = slotsSelected
               }
-            , command
+            , latestFiveGet model
             )

@@ -19,6 +19,10 @@ type alias Artist =
     String
 
 
+type alias Channel =
+    String
+
+
 type alias Class =
     String
 
@@ -28,7 +32,8 @@ type alias LatestFiveJsonRoot =
 
 
 type alias Model =
-    { overallState : OverallState
+    { channel : Channel
+    , overallState : OverallState
     , slotsSelected : SlotsSelected
     , songsCurrent : Songs
     , songsLike : SongsLike
@@ -37,10 +42,6 @@ type alias Model =
 
 type alias SlotsSelected =
     Array.Array Bool
-
-
-type alias SlotsSelectedList =
-    List Bool
 
 
 type alias SlotTouchIndex =
@@ -61,10 +62,6 @@ type alias SongsLike =
     Set.Set Song
 
 
-type alias StringJson =
-    String
-
-
 type alias Title =
     String
 
@@ -76,7 +73,7 @@ type DirectionLike
 
 type Msg
     = GotAppendResponse (Result Http.Error AppendResponseString)
-    | GotSongsCurrentResponse (Result Http.Error Songs)
+    | GotSongsResponse (Result Http.Error Songs)
     | GotTimeTick Time.Posix
     | GotTouchEvent SlotTouchIndex
 
@@ -86,20 +83,8 @@ type OverallState
     | Idle
 
 
-
---cmdMsg2Cmd : Msg -> Cmd Msg
---cmdMsg2Cmd msg =
---See:
---  http://github.com/billstclair/elm-dynamodb/blob/7ac30d60b98fbe7ea253be13f5f9df4d9c661b92/src/DynamoBackend.elm
---For wrapping a message as a Cmd:
---msg
---|> Task.succeed
---|> Task.perform
---identity
-
-
-songsCurrentCountMax : Int
-songsCurrentCountMax =
+slotsCount : Int
+slotsCount =
     5
 
 
@@ -107,9 +92,10 @@ songsCurrentCountMax =
 -- INITIALIZATION
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { overallState = Idle
+init : Channel -> ( Model, Cmd Msg )
+init channel =
+    ( { channel = channel
+      , overallState = Idle
       , slotsSelected = slotsSelectedInit
       , songsCurrent = songsCurrentInit
       , songsLike = songsLikeInit
@@ -120,17 +106,17 @@ init _ =
 
 slotsSelectedInit : SlotsSelected
 slotsSelectedInit =
-    Array.repeat songsCurrentCountMax False
-
-
-songEmpty : Song
-songEmpty =
-    Song "" ""
+    Array.repeat slotsCount False
 
 
 songsCurrentInit : Songs
 songsCurrentInit =
-    List.repeat songsCurrentCountMax songEmpty
+    let
+        songEmpty : Song
+        songEmpty =
+            Song "" ""
+    in
+    List.repeat slotsCount songEmpty
 
 
 songsLikeInit : SongsLike
@@ -144,14 +130,14 @@ songsLikeInit =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    let
-        delaySeconds : Float
-        delaySeconds =
-            20.0
-    in
     case model.overallState of
-        HaveActiveLikes ->
-            Time.every (delaySeconds * 1000.0) GotTimeTick
-
-        _ ->
+        Idle ->
             Sub.none
+
+        HaveActiveLikes ->
+            let
+                delaySeconds : Float
+                delaySeconds =
+                    20.0
+            in
+            Time.every (delaySeconds * 1000.0) GotTimeTick
