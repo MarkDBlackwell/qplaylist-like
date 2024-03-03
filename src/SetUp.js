@@ -13,17 +13,21 @@ Copyright (C) 2024 Mark D. Blackwell.
 	const channel = window.location.pathname.match(regexp)[1];
 	const node = document.querySelector('main');
 
-	const functionConsoleWarningPreventAndLoad = function() {
+	const functionConsoleWarningPreventAndLoad = function(channel, node) {
 //In Firefox, the warning was, "Layout was forced before the page."
 		window.addEventListener('load', function() {
-			Elm.Main.init(
+			const appElm = Elm.Main.init(
 				{
 					flags: channel,
 					node: node,
 				}
 			);
+			appElm.ports.logConsole.subscribe(function(array) {
+				window.console.log(array.join(': '));
+			});
+
 		});
 	};
 
-	functionConsoleWarningPreventAndLoad();
+	functionConsoleWarningPreventAndLoad(channel, node);
 })();

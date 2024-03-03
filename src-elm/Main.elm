@@ -6,6 +6,7 @@ import Browser
 import Http
 import Json.Decode as D
 import Model as M
+import Port as P exposing (..)
 import View
 
 
@@ -123,7 +124,8 @@ update msg model =
 
                 Ok appendResponseString ->
                     ( model
-                    , Cmd.none
+                      --, Cmd.none
+                    , P.logConsole ( "appendResponseString", appendResponseString )
                     )
 
         M.GotSongsResponse songsResult ->
