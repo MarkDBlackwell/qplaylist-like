@@ -1,4 +1,4 @@
-port module Port exposing (..)
+port module Port exposing (logConsole)
 
 -- PORTS
 
