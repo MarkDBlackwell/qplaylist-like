@@ -39,6 +39,9 @@ import Result exposing (Result(..))
 import String exposing (String)
 import Tuple
 
+  If you forget to add a module declaration, Elm will use this one instead:
+module Main exposing (..)
+
   See:
 https://betterprogramming.pub/elm-a-beautiful-language-for-web-development-bc06fd0b570f?gi=2418dd03a463
 https://dev.to/jjant/a-guide-to-native-code-and-effect-managers-in-elm-part-1-commands-1k6n
@@ -66,6 +69,12 @@ https://www.toptal.com/front-end/getting-started-elm-language
 https://korban.net/elm/book/
 https://harfangk.github.io/2018/12/18/elm-managing-ports.html
 https://github.com/MattCheely/elm-port-examples
+https://package.elm-lang.org/packages/elm/http/latest/Http#expectStringResponse
+https://jzxhuang.medium.com/going-beyond-200-ok-a-guide-to-detailed-http-responses-in-elm-6ddd02322e
+https://stackoverflow.com/questions/54379403/elm-0-19-how-to-obtain-request-body-when-receiving-badstatus-with-elm-http-2-0
+https://thoughtbot.com/blog/bridging-elm-and-javascript-with-ports
+https://elmprogramming.com/protecting-boundaries.html
+https://elmprogramming.com/sending-data-to-javascript.html
 
 Ref. from Setup.js:
 https://discourse.elm-lang.org/t/escaping-from-npm/7597/18
