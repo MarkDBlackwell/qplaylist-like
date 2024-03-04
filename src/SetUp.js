@@ -22,8 +22,8 @@ Copyright (C) 2024 Mark D. Blackwell.
 					node: node,
 				}
 			);
-			appElm.ports.logConsole.subscribe(function(array) {
-				window.console.log(array.join(': '));
+			appElm.ports.logConsole.subscribe(function(string) {
+				window.console.log(string);
 			});
 
 		});

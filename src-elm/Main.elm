@@ -6,7 +6,7 @@ import Browser
 import Http
 import Json.Decode as D
 import Model as M
-import Port as P exposing (..)
+import Port as P
 import View
 
 
@@ -116,16 +116,19 @@ update msg model =
                 Err err ->
                     let
                         ignored =
-                            Debug.log "appendResult error" err
+                            Debug.log message err
+
+                        message : String
+                        message =
+                            "appendResult error"
                     in
                     ( model
-                    , Cmd.none
+                    , P.logConsole message
                     )
 
                 Ok appendResponseString ->
                     ( model
-                      --, Cmd.none
-                    , P.logConsole ( "appendResponseString", appendResponseString )
+                    , Cmd.none
                     )
 
         M.GotSongsResponse songsResult ->
@@ -133,10 +136,14 @@ update msg model =
                 Err err ->
                     let
                         ignored =
-                            Debug.log "songsResult error" err
+                            Debug.log message err
+
+                        message : String
+                        message =
+                            "songsResult error"
                     in
                     ( model
-                    , Cmd.none
+                    , P.logConsole message
                     )
 
                 Ok songsCurrent ->
@@ -217,10 +224,7 @@ update msg model =
             let
                 slotsSelected : M.SlotsSelected
                 slotsSelected =
-                    Array.indexedMap
-                        --Debounce, so prefer || over xor.
-                        (\index bool -> bool || index == slotTouchIndex)
-                        model.slotsSelected
+                    Array.set slotTouchIndex True model.slotsSelected
             in
             ( { model
                 | slotsSelected = slotsSelected

@@ -3,7 +3,6 @@ module Model exposing (..)
 import Array
 import AssocSet as Set
 import Http
-import Task
 import Time
 
 
