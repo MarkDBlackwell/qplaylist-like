@@ -4,6 +4,8 @@ import AssocSet as Set
 import Html
 import Html.Attributes as A
 import Html.Events
+import Html.Keyed
+import Html.Lazy
 import Json.Decode as D
 import Model as M
 
@@ -30,11 +32,17 @@ view model =
                 |> List.map (class << (\song -> List.member song songsLike))
                 |> List.indexedMap Tuple.pair
 
+        viewSlots : List ( String, Html.Html M.Msg )
+        viewSlots =
+            List.map (Html.Lazy.lazy viewSong) slotClassesIndexed
+                |> List.indexedMap (\index x -> Tuple.pair (String.fromInt index) x)
+
         viewSong : ( M.SlotTouchIndex, M.Class ) -> Html.Html M.Msg
         viewSong ( index, class ) =
             Html.div
                 [ Html.Events.onMouseUp (M.GotTouchEvent index) ]
                 [ Html.span [ A.class class ] [] ]
     in
-    Html.main_ []
-        (List.map viewSong slotClassesIndexed)
+    Html.Keyed.node "main_"
+        []
+        viewSlots
