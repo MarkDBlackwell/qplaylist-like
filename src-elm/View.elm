@@ -2,47 +2,54 @@ module View exposing (view)
 
 import AssocSet as Set
 import Html
-import Html.Attributes as A
+import Html.Attributes
 import Html.Events
 import Html.Keyed
 import Html.Lazy
-import Json.Decode as D
 import Model as M
 
 
 view : M.Model -> Html.Html M.Msg
 view model =
     let
-        slotClassesIndexed : List ( M.SlotTouchIndex, M.Class )
-        slotClassesIndexed =
+        keyedSlots : List ( String, Html.Html M.Msg )
+        keyedSlots =
             let
-                class : Bool -> M.Class
-                class like =
-                    if like then
-                        "like"
+                classes : List M.Class
+                classes =
+                    let
+                        class : Bool -> M.Class
+                        class like =
+                            if like then
+                                "like"
 
-                    else
-                        "aloof"
+                            else
+                                "aloof"
 
-                songsLike : M.Songs
-                songsLike =
-                    Set.toList model.songsLike
+                        member : M.Song -> Bool
+                        member song =
+                            let
+                                songsLike : M.Songs
+                                songsLike =
+                                    Set.toList model.songsLike
+                            in
+                            List.member song songsLike
+                    in
+                    model.songsCurrent
+                        |> List.map (class << member)
+
+                keyedLazySlot : M.SlotTouchIndex -> M.Class -> ( String, Html.Html M.Msg )
+                keyedLazySlot index class =
+                    let
+                        viewSong : M.SlotTouchIndex -> Html.Html M.Msg
+                        viewSong _ =
+                            Html.div
+                                [ Html.Events.onMouseUp (M.GotTouchEvent index) ]
+                                [ Html.span [ Html.Attributes.class class ] [] ]
+                    in
+                    Html.Lazy.lazy viewSong index
+                        |> Tuple.pair (String.fromInt index)
             in
-            model.songsCurrent
-                |> List.map (class << (\song -> List.member song songsLike))
-                |> List.indexedMap Tuple.pair
-
-        viewSlots : List ( String, Html.Html M.Msg )
-        viewSlots =
-            List.map (Html.Lazy.lazy viewSong) slotClassesIndexed
-                |> List.indexedMap (\index x -> Tuple.pair (String.fromInt index) x)
-
-        viewSong : ( M.SlotTouchIndex, M.Class ) -> Html.Html M.Msg
-        viewSong ( index, class ) =
-            Html.div
-                [ Html.Events.onMouseUp (M.GotTouchEvent index) ]
-                [ Html.span [ A.class class ] [] ]
+            List.indexedMap keyedLazySlot classes
     in
-    Html.Keyed.node "main_"
-        []
-        viewSlots
+    Html.Keyed.node "main" [] keyedSlots
