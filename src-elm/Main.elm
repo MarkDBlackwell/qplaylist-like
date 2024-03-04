@@ -115,9 +115,8 @@ update msg model =
             case appendResult of
                 Err err ->
                     let
-                        ignored =
-                            Debug.log message err
-
+                        --ignored =
+                        --Debug.log message err
                         message : String
                         message =
                             "appendResult error"
@@ -135,9 +134,8 @@ update msg model =
             case songsResult of
                 Err err ->
                     let
-                        ignored =
-                            Debug.log message err
-
+                        --ignored =
+                        --Debug.log message err
                         message : String
                         message =
                             "songsResult error"

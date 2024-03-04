@@ -1,3 +1,5 @@
 /tmp/
 /elm-stuff/
 /index.html
+/build/
+!.gitkeep
