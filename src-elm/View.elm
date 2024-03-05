@@ -12,44 +12,47 @@ import Model as M
 view : M.Model -> Html.Html M.Msg
 view model =
     let
-        keyedSlots : List ( String, Html.Html M.Msg )
-        keyedSlots =
+        keyedSong : M.SlotTouchIndex -> M.Song -> ( String, Html.Html M.Msg )
+        keyedSong index song =
             let
-                classes : List M.Class
-                classes =
+                key : String
+                key =
+                    String.concat
+                        [ song.artist
+                        , ": "
+                        , song.title
+                        ]
+
+                lazySong : M.SlotTouchIndex -> Bool -> Html.Html M.Msg
+                lazySong indexTouch likeHeart =
                     let
-                        class : Bool -> M.Class
-                        class like =
-                            if like then
+                        classHeart : M.Class
+                        classHeart =
+                            if likeHeart then
                                 "like"
 
                             else
                                 "aloof"
-
-                        member : M.Song -> Bool
-                        member song =
-                            let
-                                songsLike : M.Songs
-                                songsLike =
-                                    Set.toList model.songsLike
-                            in
-                            List.member song songsLike
                     in
-                    model.songsCurrent
-                        |> List.map (class << member)
+                    Html.div
+                        [ Html.Events.onMouseUp (M.GotTouchEvent indexTouch) ]
+                        [ Html.span [ Html.Attributes.class classHeart ] [] ]
 
-                keyedLazySlot : M.SlotTouchIndex -> M.Class -> ( String, Html.Html M.Msg )
-                keyedLazySlot index class =
+                like : Bool
+                like =
                     let
-                        viewSong : M.SlotTouchIndex -> Html.Html M.Msg
-                        viewSong _ =
-                            Html.div
-                                [ Html.Events.onMouseUp (M.GotTouchEvent index) ]
-                                [ Html.span [ Html.Attributes.class class ] [] ]
+                        songsLike : M.Songs
+                        songsLike =
+                            Set.toList model.songsLike
                     in
-                    Html.Lazy.lazy viewSong index
-                        |> Tuple.pair (String.fromInt index)
+                    List.member song songsLike
             in
-            List.indexedMap keyedLazySlot classes
+            Html.Lazy.lazy2 lazySong index like
+                |> Tuple.pair key
     in
-    Html.Keyed.node "main" [] keyedSlots
+    Html.Keyed.node
+        "main"
+        []
+        (model.songsCurrent
+            |> List.indexedMap keyedSong
+        )
