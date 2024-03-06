@@ -1,5 +1,9 @@
-/tmp/
-/elm-stuff/
-/index.html
 /build/
+/elm-stuff/
+/tmp/
+
+/index.html
+
+*-old/
+
 !.gitkeep
