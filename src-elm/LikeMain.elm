@@ -214,7 +214,9 @@ update msg model =
                     )
 
         M.GotTimeTick timePosix ->
-            ( model
+            ( { model
+                | overallState = M.TimerIdle
+              }
               --A song in our liked set may have just started.
             , latestFiveGet model
             )
@@ -226,7 +228,8 @@ update msg model =
                     Array.set slotTouchIndex True model.slotsSelected
             in
             ( { model
-                | slotsSelected = slotsSelected
+                | overallState = M.TimerIdle
+                , slotsSelected = slotsSelected
               }
             , latestFiveGet model
             )
