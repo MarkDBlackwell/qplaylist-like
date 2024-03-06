@@ -144,4 +144,5 @@ subscriptions model =
                 delaySeconds =
                     20.0
             in
+            --The first tick happens after the delay.
             Time.every (delaySeconds * 1000.0) GotTimeTick

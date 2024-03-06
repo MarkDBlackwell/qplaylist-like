@@ -141,7 +141,10 @@ update msg model =
                         message =
                             "songsResult error"
                     in
-                    ( model
+                    ( { model
+                        --Retry after delay.
+                        | overallState = M.TimerActive
+                      }
                     , P.logConsole message
                     )
 
@@ -177,9 +180,11 @@ update msg model =
                                         (Set.toList model.songsLike)
                             in
                             if songsLikeAny || slotsSelectedAny then
+                                --Delay, then check again.
                                 M.TimerActive
 
                             else
+                                --Nothing to do (unless conditions change).
                                 M.TimerIdle
 
                         songsLike : M.SongsLike
@@ -213,8 +218,9 @@ update msg model =
                     , commands
                     )
 
-        M.GotTimeTick timePosix ->
+        M.GotTimeTick _ ->
             ( { model
+                --Always stop the timer after the first tick.
                 | overallState = M.TimerIdle
               }
               --A song in our liked set may have just started.
