@@ -1,4 +1,4 @@
-module Main exposing (main)
+module LikeMain exposing (main)
 
 import Array
 import AssocSet as Set

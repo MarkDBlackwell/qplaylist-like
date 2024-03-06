@@ -16,7 +16,7 @@ Copyright (C) 2024 Mark D. Blackwell.
 	const functionConsoleWarningPreventAndLoad = function(channel, node) {
 //In Firefox, the warning was, "Layout was forced before the page."
 		window.addEventListener('load', function() {
-			const appElm = Elm.Main.init(
+			const appElm = Elm.LikeMain.init(
 				{
 					flags: channel,
 					node: node,

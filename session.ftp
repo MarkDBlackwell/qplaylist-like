@@ -4,6 +4,6 @@ binary
 cd /transfer
 pwd
 lcd build
-put Main.js
-put SetUp.js
+put LikeMain.js
+put LikeSetUp.js
 quit

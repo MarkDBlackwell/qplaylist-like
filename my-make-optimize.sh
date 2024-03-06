@@ -14,13 +14,13 @@ export PATH="$DIRECTORY_NODE_BIN:$PATH" && \
 echo "Checking uglify-js version" && \
 uglifyjs -v | diff - .uglify-js-version && \
 
-NAME=SetUp && \
+NAME=LikeSetUp && \
 echo "Minifying $NAME.js" && \
 uglifyjs --compress --mangle --warn \
 -- $DIRECTORY_SOURCE_JAVASCRIPT/$NAME.js > \
 $DIRECTORY_BUILD/$NAME.js && \
 
-NAME=Main && \
+NAME=LikeMain && \
 echo "Compiling and optimizing $NAME.elm" && \
 elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_TEMP/$NAME-optimized.js --optimize && \
 

@@ -16,14 +16,14 @@ elm-format | head -n 1 | diff - .elm-format-version && \
 echo "Searching $DIRECTORY_SOURCE_JAVASCRIPT for trailing blanks" && \
 (grep -nrIE '[[:space:]]$' $DIRECTORY_SOURCE_JAVASCRIPT; STATUS="$?"; NO_LINES_SELECTED="1"; [ "$STATUS" -eq "$NO_LINES_SELECTED" ]) && \
 
-NAME=SetUp && \
+NAME=LikeSetUp && \
 echo "Copying $NAME.js" && \
 cp --preserve=all $DIRECTORY_SOURCE_JAVASCRIPT/$NAME.js $DIRECTORY_BUILD/$NAME.js && \
 
 echo "Formatting $DIRECTORY_SOURCE_ELM" && \
 elm-format --yes $DIRECTORY_SOURCE_ELM && \
 
-NAME=Main && \
+NAME=LikeMain && \
 echo "Compiling $NAME.elm" && \
 elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_BUILD/$NAME.js && \
 
