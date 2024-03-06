@@ -177,10 +177,10 @@ update msg model =
                                         (Set.toList model.songsLike)
                             in
                             if songsLikeAny || slotsSelectedAny then
-                                M.HaveActiveLikes
+                                M.TimerActive
 
                             else
-                                M.Idle
+                                M.TimerIdle
 
                         songsLike : M.SongsLike
                         songsLike =

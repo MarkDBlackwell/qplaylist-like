@@ -83,8 +83,8 @@ type Msg
 
 
 type OverallState
-    = HaveActiveLikes
-    | Idle
+    = TimerActive
+    | TimerIdle
 
 
 slotsCount : Int
@@ -99,7 +99,7 @@ slotsCount =
 init : Channel -> ( Model, Cmd Msg )
 init channel =
     ( { channel = channel
-      , overallState = Idle
+      , overallState = TimerIdle
       , slotsSelected = slotsSelectedInit
       , songsCurrent = songsCurrentInit
       , songsLike = songsLikeInit
@@ -135,10 +135,10 @@ songsLikeInit =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.overallState of
-        Idle ->
+        TimerIdle ->
             Sub.none
 
-        HaveActiveLikes ->
+        TimerActive ->
             let
                 delaySeconds : Float
                 delaySeconds =
