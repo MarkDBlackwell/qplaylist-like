@@ -49,6 +49,7 @@ type alias SlotTouchIndex =
 
 type alias Song =
     { artist : Artist
+    , time : SongTime
     , title : Title
     }
 
@@ -59,6 +60,10 @@ type alias Songs =
 
 type alias SongsLike =
     Set.Set Song
+
+
+type alias SongTime =
+    String
 
 
 type alias Title =
@@ -113,7 +118,7 @@ songsCurrentInit =
     let
         songEmpty : Song
         songEmpty =
-            Song "" ""
+            Song "" "" ""
     in
     List.repeat slotsCount songEmpty
 

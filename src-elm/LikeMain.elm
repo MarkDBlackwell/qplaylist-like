@@ -99,8 +99,9 @@ main =
 
 songJsonDecoder : D.Decoder M.Song
 songJsonDecoder =
-    D.map2 M.Song
+    D.map3 M.Song
         (D.field "artist" D.string)
+        (D.field "time" D.string)
         (D.field "title" D.string)
 
 

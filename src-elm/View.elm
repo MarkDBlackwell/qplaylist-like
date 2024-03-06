@@ -20,6 +20,8 @@ view model =
                     String.concat
                         [ song.artist
                         , ": "
+                        , song.time
+                        , ": "
                         , song.title
                         ]
 
