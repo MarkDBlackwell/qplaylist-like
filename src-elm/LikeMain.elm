@@ -7,6 +7,8 @@ import Http
 import Json.Decode as D
 import Model as M
 import Port as P
+import Task
+import Time
 import View
 
 
@@ -116,8 +118,6 @@ update msg model =
             case appendResult of
                 Err err ->
                     let
-                        --ignored =
-                        --Debug.log message err
                         message : String
                         message =
                             "appendResult error"
@@ -140,8 +140,10 @@ update msg model =
                             "songsResult error"
                     in
                     ( { model
-                        --Retry after delay.
-                        | overallState = M.TimerActive
+                        | delaySeconds = M.delaySecondsStandard
+
+                        --Retry.
+                        , overallState = M.TimerActive
                       }
                     , P.logConsole message
                     )
@@ -216,22 +218,27 @@ update msg model =
                     , commands
                     )
 
-        M.GotTimeStart timeStart ->
+        M.GotTimeNow timeNow ->
             ( { model
-                | delaySeconds = M.delaySecondsFirst timeStart
-                , timeStart = timeStart
+                | delaySeconds = M.delaySecondsSynchronize timeNow
+                , timeNow = timeNow
               }
             , Cmd.none
             )
 
         M.GotTimeTick _ ->
             ( { model
-                | delaySeconds = M.delaySecondsStandard
+                | delaySeconds = M.delaySecondsInit
+
                 --Always stop the timer after the first tick.
                 , overallState = M.TimerIdle
               }
-              --A song in our liked set may have just started.
-            , latestFiveGet model
+            , Cmd.batch
+                [ Task.perform M.GotTimeNow Time.now
+
+                --A song in our liked set may have just started.
+                , latestFiveGet model
+                ]
             )
 
         M.GotTouchEvent slotTouchIndex ->
@@ -241,9 +248,12 @@ update msg model =
                     Array.set slotTouchIndex True model.slotsSelected
             in
             ( { model
-                | overallState = M.TimerIdle
+                | delaySeconds = M.delaySecondsInit
+                , overallState = M.TimerIdle
                 , slotsSelected = slotsSelected
               }
-            , latestFiveGet model
+            , Cmd.batch
+                [ Task.perform M.GotTimeNow Time.now
+                , latestFiveGet model
+                ]
             )
-.

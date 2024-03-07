@@ -37,7 +37,7 @@ type alias Model =
     , slotsSelected : SlotsSelected
     , songsCurrent : Songs
     , songsLike : SongsLike
-    , timeStart : Time.Posix
+    , timeNow : Time.Posix
     }
 
 
@@ -80,7 +80,7 @@ type DirectionLike
 type Msg
     = GotAppendResponse (Result Http.Error AppendResponseString)
     | GotSongsResponse (Result Http.Error Songs)
-    | GotTimeStart Time.Posix
+    | GotTimeNow Time.Posix
     | GotTimeTick Time.Posix
     | GotTouchEvent SlotTouchIndex
 
@@ -90,12 +90,12 @@ type OverallState
     | TimerIdle
 
 
-delaySecondsFirst : Time.Posix -> Int
-delaySecondsFirst timeStart =
+delaySecondsSynchronize : Time.Posix -> Int
+delaySecondsSynchronize timeNow =
     let
         secondsStart : Int
         secondsStart =
-            Time.posixToMillis timeStart // 1000
+            Time.posixToMillis timeNow // 1000
 
         secondsOver : Int
         secondsOver =
@@ -119,17 +119,23 @@ slotsCount =
 -- INITIALIZATION
 
 
+delaySecondsInit : Int
+delaySecondsInit =
+    --Any long delay.
+    86400
+
+
 init : Channel -> ( Model, Cmd Msg )
 init channel =
     ( { channel = channel
-      , delaySeconds = 0
+      , delaySeconds = delaySecondsInit
       , overallState = TimerIdle
       , slotsSelected = slotsSelectedInit
       , songsCurrent = songsCurrentInit
       , songsLike = songsLikeInit
-      , timeStart = Time.millisToPosix 0
+      , timeNow = Time.millisToPosix 0
       }
-    , Task.perform GotTimeStart Time.now
+    , Cmd.none
     )
 
 
@@ -162,31 +168,21 @@ subscriptions model =
     let
         timer : Sub Msg
         timer =
-            let
-                milliseconds : Float
-                milliseconds =
-                    toFloat (model.delaySeconds * 1000)
-            in
-            if Time.posixToMillis model.timeStart < 1000 then
-                Sub.none
-
-            else
-                --The first tick happens after the delay.
-                Time.every milliseconds GotTimeTick
-
-        timerOld : Sub Msg
-        timerOld =
             case model.overallState of
                 TimerIdle ->
                     Sub.none
 
                 TimerActive ->
                     let
-                        delaySeconds : Float
-                        delaySeconds =
-                            20.0
+                        milliseconds : Float
+                        milliseconds =
+                            toFloat (model.delaySeconds * 1000)
                     in
-                    --The first tick happens after the delay.
-                    Time.every (delaySeconds * 1000.0) GotTimeTick
+                    if Time.posixToMillis model.timeNow < 1000 then
+                        Sub.none
+
+                    else
+                        --The first tick happens after the delay.
+                        Time.every milliseconds GotTimeTick
     in
     timer
