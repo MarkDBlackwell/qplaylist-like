@@ -135,8 +135,6 @@ update msg model =
             case songsResult of
                 Err err ->
                     let
-                        --ignored =
-                        --Debug.log message err
                         message : String
                         message =
                             "songsResult error"
@@ -218,10 +216,19 @@ update msg model =
                     , commands
                     )
 
+        M.GotTimeStart timeStart ->
+            ( { model
+                | delaySeconds = M.delaySecondsFirst timeStart
+                , timeStart = timeStart
+              }
+            , Cmd.none
+            )
+
         M.GotTimeTick _ ->
             ( { model
+                | delaySeconds = M.delaySecondsStandard
                 --Always stop the timer after the first tick.
-                | overallState = M.TimerIdle
+                , overallState = M.TimerIdle
               }
               --A song in our liked set may have just started.
             , latestFiveGet model
@@ -239,3 +246,4 @@ update msg model =
               }
             , latestFiveGet model
             )
+.
