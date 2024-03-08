@@ -81,28 +81,13 @@ type Msg
     = GotAppendResponse (Result Http.Error AppendResponseString)
     | GotSongsResponse (Result Http.Error Songs)
     | GotTimeNow Time.Posix
-    | GotTimeTick Time.Posix
+    | GotTimer Time.Posix
     | GotTouchEvent SlotTouchIndex
 
 
 type OverallState
     = TimerActive
     | TimerIdle
-
-
-delaySecondsSynchronize : Time.Posix -> Int
-delaySecondsSynchronize timeNow =
-    let
-        secondsStart : Int
-        secondsStart =
-            Time.posixToMillis timeNow // 1000
-
-        secondsOver : Int
-        secondsOver =
-            secondsStart
-                |> modBy delaySecondsStandard
-    in
-    delaySecondsStandard - secondsOver
 
 
 delaySecondsStandard : Int
@@ -183,6 +168,6 @@ subscriptions model =
 
                     else
                         --The first tick happens after the delay.
-                        Time.every milliseconds GotTimeTick
+                        Time.every milliseconds GotTimer
     in
     timer

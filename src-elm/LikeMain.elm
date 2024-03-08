@@ -219,14 +219,42 @@ update msg model =
                     )
 
         M.GotTimeNow timeNow ->
+            let
+                delaySeconds : Int
+                delaySeconds =
+                    let
+                        over : Int
+                        over =
+                            let
+                                start : Int
+                                start =
+                                    Time.posixToMillis timeNow // 1000
+                            in
+                            start
+                                |> modBy standard
+
+                        phase : Int
+                        phase =
+                            if String.isEmpty model.channel then
+                                0
+
+                            else
+                                standard // 2
+
+                        standard : Int
+                        standard =
+                            M.delaySecondsStandard
+                    in
+                    standard - over + phase
+            in
             ( { model
-                | delaySeconds = M.delaySecondsSynchronize timeNow
+                | delaySeconds = delaySeconds
                 , timeNow = timeNow
               }
             , Cmd.none
             )
 
-        M.GotTimeTick _ ->
+        M.GotTimer _ ->
             ( { model
                 | delaySeconds = M.delaySecondsInit
 
