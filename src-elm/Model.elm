@@ -90,11 +90,6 @@ type OverallState
     | TimerIdle
 
 
-delaySecondsStandard : Int
-delaySecondsStandard =
-    60
-
-
 slotsCount : Int
 slotsCount =
     5
@@ -104,20 +99,24 @@ slotsCount =
 -- INITIALIZATION
 
 
-delaySecondsInit : Int
-delaySecondsInit =
-    --Any long delay.
-    86400
-
-
 init : Channel -> ( Model, Cmd Msg )
 init channel =
+    let
+        songsCurrentInit : Songs
+        songsCurrentInit =
+            let
+                songEmpty : Song
+                songEmpty =
+                    Song "" "" ""
+            in
+            List.repeat slotsCount songEmpty
+    in
     ( { channel = channel
-      , delaySeconds = delaySecondsInit
+      , delaySeconds = 0
       , overallState = TimerIdle
       , slotsSelected = slotsSelectedInit
       , songsCurrent = songsCurrentInit
-      , songsLike = songsLikeInit
+      , songsLike = Set.empty
       , timeNow = Time.millisToPosix 0
       }
     , Cmd.none
@@ -127,21 +126,6 @@ init channel =
 slotsSelectedInit : SlotsSelected
 slotsSelectedInit =
     Array.repeat slotsCount False
-
-
-songsCurrentInit : Songs
-songsCurrentInit =
-    let
-        songEmpty : Song
-        songEmpty =
-            Song "" "" ""
-    in
-    List.repeat slotsCount songEmpty
-
-
-songsLikeInit : SongsLike
-songsLikeInit =
-    Set.empty
 
 
 
@@ -162,8 +146,12 @@ subscriptions model =
                         milliseconds : Float
                         milliseconds =
                             toFloat (model.delaySeconds * 1000)
+
+                        timeNotSet : Bool
+                        timeNotSet =
+                            Time.posixToMillis model.timeNow < 1000
                     in
-                    if Time.posixToMillis model.timeNow < 1000 then
+                    if timeNotSet then
                         Sub.none
 
                     else

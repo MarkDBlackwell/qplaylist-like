@@ -140,10 +140,8 @@ update msg model =
                             "songsResult error"
                     in
                     ( { model
-                        | delaySeconds = M.delaySecondsStandard
-
                         --Retry.
-                        , overallState = M.TimerActive
+                        | overallState = M.TimerActive
                       }
                     , P.logConsole message
                     )
@@ -243,7 +241,7 @@ update msg model =
 
                         standard : Int
                         standard =
-                            M.delaySecondsStandard
+                            60
                     in
                     standard - over + phase
             in
@@ -256,10 +254,8 @@ update msg model =
 
         M.GotTimer _ ->
             ( { model
-                | delaySeconds = M.delaySecondsInit
-
                 --Always stop the timer after the first tick.
-                , overallState = M.TimerIdle
+                | overallState = M.TimerIdle
               }
             , Cmd.batch
                 [ Task.perform M.GotTimeNow Time.now
@@ -276,8 +272,7 @@ update msg model =
                     Array.set slotTouchIndex True model.slotsSelected
             in
             ( { model
-                | delaySeconds = M.delaySecondsInit
-                , overallState = M.TimerIdle
+                | overallState = M.TimerIdle
                 , slotsSelected = slotsSelected
               }
             , Cmd.batch
