@@ -6,8 +6,8 @@ module LikeMain exposing (main)
 import Array
 import AssocSet as Set
 import Browser
+import Decode as D
 import Http
-import Json.Decode as D
 import Model as M
 import Port as P
 import Task
@@ -77,7 +77,7 @@ appendPost directionLike song =
     in
     Http.post
         { body = Http.stringBody contentType payload
-        , expect = Http.expectJson M.GotAppendResponse appendJsonDecoder
+        , expect = Http.expectJson M.GotAppendResponse D.appendJsonDecoder
         , url = url
         }
 
@@ -94,34 +94,9 @@ latestFiveGet model =
                 ]
     in
     Http.get
-        { expect = Http.expectJson M.GotSongsResponse latestFiveJsonDecoder
+        { expect = Http.expectJson M.GotSongsResponse D.latestFiveJsonDecoder
         , url = url
         }
-
-
-
--- DECODE
---TODO: Move decoding to its own module, Decode.
-
-
-appendJsonDecoder : D.Decoder M.AppendResponseString
-appendJsonDecoder =
-    D.map (.response << M.AppendJsonRoot)
-        (D.field "response" D.string)
-
-
-latestFiveJsonDecoder : D.Decoder M.Songs
-latestFiveJsonDecoder =
-    D.map (List.take M.slotsCount << .latestFive << M.LatestFiveJsonRoot)
-        (D.field "latestFive" <| D.list songJsonDecoder)
-
-
-songJsonDecoder : D.Decoder M.Song
-songJsonDecoder =
-    D.map3 M.Song
-        (D.field "artist" D.string)
-        (D.field "time" D.string)
-        (D.field "title" D.string)
 
 
 
