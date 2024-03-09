@@ -1,3 +1,6 @@
+--TODO: Rename to Main, but keep the compiler output as LikeMain.js.
+
+
 module LikeMain exposing (main)
 
 import Array
@@ -90,6 +93,7 @@ main =
 
 
 -- DECODE
+--TODO: Move decoding to its own module, Decode.
 
 
 appendJsonDecoder : D.Decoder M.AppendResponseString
