@@ -15,6 +15,24 @@ import Time
 import View
 
 
+
+-- ELM ARCHITECTURE
+
+
+main : Program M.Channel M.Model M.Msg
+main =
+    Browser.element
+        { init = M.init
+        , update = update
+        , subscriptions = M.subscriptions
+        , view = View.view
+        }
+
+
+
+-- APPLICATION-SPECIFIC
+
+
 appendPost : M.DirectionLike -> M.Song -> Cmd M.Msg
 appendPost directionLike song =
     let
@@ -78,16 +96,6 @@ latestFiveGet model =
     Http.get
         { expect = Http.expectJson M.GotSongsResponse latestFiveJsonDecoder
         , url = url
-        }
-
-
-main : Program M.Channel M.Model M.Msg
-main =
-    Browser.element
-        { init = M.init
-        , update = update
-        , subscriptions = M.subscriptions
-        , view = View.view
         }
 
 

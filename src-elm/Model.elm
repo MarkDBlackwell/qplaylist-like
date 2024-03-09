@@ -6,6 +6,66 @@ import Http
 import Time
 
 
+
+-- ELM ARCHITECTURE
+
+
+type alias Model =
+    { channel : Channel
+    , delaySeconds : Int
+    , overallState : OverallState
+    , slotsSelected : SlotsSelected
+    , songsCurrent : Songs
+    , songsLike : SongsLike
+    , timeNow : Time.Posix
+    }
+
+
+type Msg
+    = GotAppendResponse (Result Http.Error AppendResponseString)
+    | GotSongsResponse (Result Http.Error Songs)
+    | GotTimeNow Time.Posix
+    | GotTimer Time.Posix
+    | GotTouchEvent SlotTouchIndex
+
+
+
+-- INITIALIZATION
+
+
+init : Channel -> ( Model, Cmd Msg )
+init channel =
+    let
+        songsCurrentInit : Songs
+        songsCurrentInit =
+            let
+                songEmpty : Song
+                songEmpty =
+                    Song "" "" ""
+            in
+            List.repeat slotsCount songEmpty
+    in
+    ( { channel = channel
+      , delaySeconds = 0
+      , overallState = TimerIdle
+      , slotsSelected = slotsSelectedInit
+      , songsCurrent = songsCurrentInit
+      , songsLike = Set.empty
+      , timeNow = Time.millisToPosix 0
+      }
+    , Cmd.none
+    )
+
+
+slotsSelectedInit : SlotsSelected
+slotsSelectedInit =
+    Array.repeat slotsCount False
+
+
+
+-- APPLICATION-SPECIFIC
+
+
 type alias AppendJsonRoot =
     { response : String }
 
@@ -74,62 +134,6 @@ type OverallState
 slotsCount : Int
 slotsCount =
     5
-
-
-
--- ELM ARCHITECTURE
-
-
-type alias Model =
-    { channel : Channel
-    , delaySeconds : Int
-    , overallState : OverallState
-    , slotsSelected : SlotsSelected
-    , songsCurrent : Songs
-    , songsLike : SongsLike
-    , timeNow : Time.Posix
-    }
-
-
-type Msg
-    = GotAppendResponse (Result Http.Error AppendResponseString)
-    | GotSongsResponse (Result Http.Error Songs)
-    | GotTimeNow Time.Posix
-    | GotTimer Time.Posix
-    | GotTouchEvent SlotTouchIndex
-
-
-
--- INITIALIZATION
-
-
-init : Channel -> ( Model, Cmd Msg )
-init channel =
-    let
-        songsCurrentInit : Songs
-        songsCurrentInit =
-            let
-                songEmpty : Song
-                songEmpty =
-                    Song "" "" ""
-            in
-            List.repeat slotsCount songEmpty
-    in
-    ( { channel = channel
-      , delaySeconds = 0
-      , overallState = TimerIdle
-      , slotsSelected = slotsSelectedInit
-      , songsCurrent = songsCurrentInit
-      , songsLike = Set.empty
-      , timeNow = Time.millisToPosix 0
-      }
-    , Cmd.none
-    )
-
-
-slotsSelectedInit : SlotsSelected
-slotsSelectedInit =
-    Array.repeat slotsCount False
 
 
 
