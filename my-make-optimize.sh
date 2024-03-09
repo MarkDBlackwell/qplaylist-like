@@ -17,12 +17,12 @@ uglifyjs -v | diff - .uglify-js-version && \
 NAME=LikeSetUp && \
 echo "Minifying $NAME.js" && \
 uglifyjs --compress --mangle --warn \
--- $DIRECTORY_SOURCE_JAVASCRIPT/$NAME.js > \
+-- $DIRECTORY_SOURCE_JAVASCRIPT/SetUp.js > \
 $DIRECTORY_BUILD/$NAME.js && \
 
 NAME=LikeMain && \
 echo "Compiling and optimizing $NAME.elm" && \
-elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_TEMP/$NAME-optimized.js --optimize && \
+elm make $DIRECTORY_SOURCE_ELM/Main.elm --output=$DIRECTORY_TEMP/$NAME-optimized.js --optimize && \
 
 echo "Minifying $NAME.js" && \
 uglifyjs --compress "pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe" \

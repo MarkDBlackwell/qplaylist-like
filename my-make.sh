@@ -20,14 +20,14 @@ echo "Searching $DIRECTORY_SOURCE_JAVASCRIPT for trailing blanks" && \
 
 NAME=LikeSetUp && \
 echo "Copying $NAME.js" && \
-cp --preserve=all $DIRECTORY_SOURCE_JAVASCRIPT/$NAME.js $DIRECTORY_BUILD/$NAME.js && \
+cp $DIRECTORY_SOURCE_JAVASCRIPT/SetUp.js $DIRECTORY_BUILD/$NAME.js && \
 
 echo "Formatting $DIRECTORY_SOURCE_ELM" && \
 elm-format --yes $DIRECTORY_SOURCE_ELM && \
 
 NAME=LikeMain && \
 echo "Compiling $NAME.elm" && \
-elm make $DIRECTORY_SOURCE_ELM/$NAME.elm --output=$DIRECTORY_BUILD/$NAME.js && \
+elm make $DIRECTORY_SOURCE_ELM/Main.elm --output=$DIRECTORY_BUILD/$NAME.js && \
 
 ls -l build && \
 

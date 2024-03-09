@@ -1,7 +1,4 @@
---TODO: Rename to Main, but keep the compiler output as LikeMain.js.
-
-
-module LikeMain exposing (main)
+module Main exposing (main)
 
 import Array
 import AssocSet as Set
