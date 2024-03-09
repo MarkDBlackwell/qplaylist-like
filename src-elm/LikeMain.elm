@@ -52,6 +52,7 @@ appendPost directionLike song =
                         (\( x, y ) -> String.concat [ x, "=", y ])
                         pairs
             in
+            --TODO: Use URL.Builder. If necessary, strip off the initial slash in the PHP append program.
             List.intersperse "&" assignments
                 |> String.concat
 
