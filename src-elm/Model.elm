@@ -30,17 +30,6 @@ type alias LatestFiveJsonRoot =
     { latestFive : Songs }
 
 
-type alias Model =
-    { channel : Channel
-    , delaySeconds : Int
-    , overallState : OverallState
-    , slotsSelected : SlotsSelected
-    , songsCurrent : Songs
-    , songsLike : SongsLike
-    , timeNow : Time.Posix
-    }
-
-
 type alias SlotsSelected =
     Array.Array Bool
 
@@ -77,14 +66,6 @@ type DirectionLike
     | SendUnlike
 
 
-type Msg
-    = GotAppendResponse (Result Http.Error AppendResponseString)
-    | GotSongsResponse (Result Http.Error Songs)
-    | GotTimeNow Time.Posix
-    | GotTimer Time.Posix
-    | GotTouchEvent SlotTouchIndex
-
-
 type OverallState
     = TimerActive
     | TimerIdle
@@ -93,6 +74,29 @@ type OverallState
 slotsCount : Int
 slotsCount =
     5
+
+
+
+-- ELM ARCHITECTURE
+
+
+type alias Model =
+    { channel : Channel
+    , delaySeconds : Int
+    , overallState : OverallState
+    , slotsSelected : SlotsSelected
+    , songsCurrent : Songs
+    , songsLike : SongsLike
+    , timeNow : Time.Posix
+    }
+
+
+type Msg
+    = GotAppendResponse (Result Http.Error AppendResponseString)
+    | GotSongsResponse (Result Http.Error Songs)
+    | GotTimeNow Time.Posix
+    | GotTimer Time.Posix
+    | GotTouchEvent SlotTouchIndex
 
 
 

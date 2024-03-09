@@ -12,12 +12,6 @@ import Time
 import View
 
 
-appendJsonDecoder : D.Decoder M.AppendResponseString
-appendJsonDecoder =
-    D.map (.response << M.AppendJsonRoot)
-        (D.field "response" D.string)
-
-
 appendPost : M.DirectionLike -> M.Song -> Cmd M.Msg
 appendPost directionLike song =
     let
@@ -84,12 +78,6 @@ latestFiveGet model =
         }
 
 
-latestFiveJsonDecoder : D.Decoder M.Songs
-latestFiveJsonDecoder =
-    D.map (List.take M.slotsCount << .latestFive << M.LatestFiveJsonRoot)
-        (D.field "latestFive" <| D.list songJsonDecoder)
-
-
 main : Program M.Channel M.Model M.Msg
 main =
     Browser.element
@@ -98,6 +86,22 @@ main =
         , subscriptions = M.subscriptions
         , view = View.view
         }
+
+
+
+-- DECODE
+
+
+appendJsonDecoder : D.Decoder M.AppendResponseString
+appendJsonDecoder =
+    D.map (.response << M.AppendJsonRoot)
+        (D.field "response" D.string)
+
+
+latestFiveJsonDecoder : D.Decoder M.Songs
+latestFiveJsonDecoder =
+    D.map (List.take M.slotsCount << .latestFive << M.LatestFiveJsonRoot)
+        (D.field "latestFive" <| D.list songJsonDecoder)
 
 
 songJsonDecoder : D.Decoder M.Song
