@@ -12,16 +12,12 @@ Copyright (C) 2024 Mark D. Blackwell. All rights reserved. This program is distr
 	const functionConsoleWarningPreventAndLoad = function(channel, node) {
 //In Firefox, the warning was, "Layout was forced before the page."
 		window.addEventListener('load', function() {
-			const appElm = Elm.Main.init(
+			Elm.Main.init(
 				{
 					flags: channel,
 					node: node,
 				}
 			);
-			appElm.ports.logConsole.subscribe(function(string) {
-				window.console.log(string);
-			});
-
 		});
 	};
 
