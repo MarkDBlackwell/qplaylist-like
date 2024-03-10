@@ -8,6 +8,7 @@ import Http
 import Model as M
 import Task
 import Time
+import Url.Builder as U
 import View
 
 
@@ -39,37 +40,38 @@ appendPost directionLike song =
         payload : String
         payload =
             let
-                assignments : List String
-                assignments =
+                pairs : List ( String, String )
+                pairs =
                     let
-                        pairs : List ( String, String )
-                        pairs =
-                            let
-                                direction : String
-                                direction =
-                                    case directionLike of
-                                        M.SendLike ->
-                                            "l"
+                        direction : String
+                        direction =
+                            case directionLike of
+                                M.SendLike ->
+                                    "l"
 
-                                        M.SendUnlike ->
-                                            "u"
-                            in
-                            [ ( "direction", direction )
-                            , ( "song_artist", song.artist )
-                            , ( "song_title", song.title )
-                            ]
+                                M.SendUnlike ->
+                                    "u"
                     in
-                    List.map
-                        (\( x, y ) -> String.concat [ x, "=", y ])
-                        pairs
+                    [ ( "direction", direction )
+                    , ( "song_artist", song.artist )
+                    , ( "song_title", song.title )
+                    ]
+
+                queryIndicatorLength : Int
+                queryIndicatorLength =
+                    1
             in
-            --TODO: Use URL.Builder. If necessary, strip off the initial slash in the PHP append program.
-            List.intersperse "&" assignments
-                |> String.concat
+            pairs
+                |> List.map (\( x, y ) -> U.string x y)
+                |> U.toQuery
+                |> String.dropLeft queryIndicatorLength
 
         url : String
         url =
-            "https://wtmd.org/like/append.php"
+            U.crossOrigin
+                "https://wtmd.org"
+                [ "like", "append.php" ]
+                []
     in
     Http.post
         { body = Http.stringBody contentType payload
@@ -83,11 +85,18 @@ latestFiveGet model =
     let
         url : String
         url =
-            String.concat
-                [ "../playlist/dynamic/LatestFive"
-                , model.channel
-                , ".json"
-                ]
+            let
+                basename : String
+                basename =
+                    String.concat
+                        [ "LatestFive"
+                        , model.channel
+                        , ".json"
+                        ]
+            in
+            U.relative
+                [ "..", "playlist", "dynamic", basename ]
+                []
     in
     Http.get
         { expect = Http.expectJson M.GotSongsResponse D.latestFiveJsonDecoder
