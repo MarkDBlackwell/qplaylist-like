@@ -131,6 +131,11 @@ type OverallState
     | TimerIdle
 
 
+delayStandard : Int
+delayStandard =
+    60
+
+
 slotsCount : Int
 slotsCount =
     5
@@ -153,15 +158,11 @@ subscriptions model =
                     let
                         milliseconds : Float
                         milliseconds =
-                            model.delaySeconds
-                                |> (*) 1000
-                                |> toFloat
+                            toFloat (model.delaySeconds * 1000)
 
                         timeNotSet : Bool
                         timeNotSet =
-                            model.timeNow
-                                |> Time.posixToMillis
-                                |> (>) 1000
+                            Time.posixToMillis model.timeNow < 1000
                     in
                     if timeNotSet then
                         Sub.none
