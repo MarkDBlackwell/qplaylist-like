@@ -8,8 +8,6 @@ DIRECTORY_SOURCE_ELM=src-elm
 DIRECTORY_SOURCE_JAVASCRIPT=src
 DIRECTORY_NODE_BIN=../qplaylist-remember/node_modules/.bin
 (
-clear && \
-
 export PATH="$DIRECTORY_NODE_BIN:$PATH" && \
 
 echo "Checking elm-format version" && \
