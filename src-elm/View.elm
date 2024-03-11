@@ -25,8 +25,8 @@ view model =
                         , song.title
                         ]
 
-                lazySong : M.SlotTouchIndex -> Bool -> Html.Html M.Msg
-                lazySong indexTouch likeHeart =
+                lazyViewSong : M.SlotTouchIndex -> Bool -> Html.Html M.Msg
+                lazyViewSong indexTouch likeHeart =
                     let
                         classHeart : M.Class
                         classHeart =
@@ -49,8 +49,7 @@ view model =
                     in
                     List.member song songsLike
             in
-            Html.Lazy.lazy2 lazySong index like
-                |> Tuple.pair key
+            Tuple.pair key <| Html.Lazy.lazy2 lazyViewSong index like
     in
     Html.Keyed.node
         "main"

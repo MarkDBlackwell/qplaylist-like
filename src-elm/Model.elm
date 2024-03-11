@@ -153,11 +153,15 @@ subscriptions model =
                     let
                         milliseconds : Float
                         milliseconds =
-                            toFloat (model.delaySeconds * 1000)
+                            model.delaySeconds
+                                |> (*) 1000
+                                |> toFloat
 
                         timeNotSet : Bool
                         timeNotSet =
-                            Time.posixToMillis model.timeNow < 1000
+                            model.timeNow
+                                |> Time.posixToMillis
+                                |> (>) 1000
                     in
                     if timeNotSet then
                         Sub.none

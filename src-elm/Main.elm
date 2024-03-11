@@ -40,30 +40,37 @@ appendPost directionLike song =
         payload : String
         payload =
             let
-                pairs : List ( String, String )
-                pairs =
+                items : List U.QueryParameter
+                items =
                     let
-                        direction : String
-                        direction =
-                            case directionLike of
-                                M.SendLike ->
-                                    "l"
+                        pairs : List ( String, String )
+                        pairs =
+                            let
+                                direction : String
+                                direction =
+                                    case directionLike of
+                                        M.SendLike ->
+                                            "l"
 
-                                M.SendUnlike ->
-                                    "u"
+                                        M.SendUnlike ->
+                                            "u"
+                            in
+                            [ ( "direction", direction )
+                            , ( "song_artist", song.artist )
+                            , ( "song_title", song.title )
+                            ]
+
+                        transform : ( String, String ) -> U.QueryParameter
+                        transform ( key, value ) =
+                            U.string key value
                     in
-                    [ ( "direction", direction )
-                    , ( "song_artist", song.artist )
-                    , ( "song_title", song.title )
-                    ]
+                    List.map transform pairs
 
                 queryIndicatorLength : Int
                 queryIndicatorLength =
                     1
             in
-            pairs
-                |> List.map (\( x, y ) -> U.string x y)
-                |> U.toQuery
+            U.toQuery items
                 |> String.dropLeft queryIndicatorLength
 
         url : String
@@ -211,11 +218,16 @@ update msg model =
                         over : Int
                         over =
                             let
-                                start : Int
-                                start =
-                                    Time.posixToMillis timeNow // 1000
+                                nowSeconds : Int
+                                nowSeconds =
+                                    let
+                                        milliseconds : Int
+                                        milliseconds =
+                                            Time.posixToMillis timeNow
+                                    in
+                                    milliseconds // 1000
                             in
-                            start
+                            nowSeconds
                                 |> modBy standard
 
                         phase : Int
@@ -230,7 +242,10 @@ update msg model =
                         standard =
                             60
                     in
-                    standard - over + phase
+                    standard
+                        - over
+                        + phase
+                        |> modBy standard
             in
             ( { model
                 | delaySeconds = delaySeconds
