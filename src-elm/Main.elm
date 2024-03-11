@@ -133,6 +133,10 @@ update msg model =
         M.GotSongsResponse songsResult ->
             case songsResult of
                 Err err ->
+                    let
+                        _ =
+                            Debug.log "songsResult error" ""
+                    in
                     ( { model
                         --Retry.
                         | overallState = M.TimerActive
@@ -225,7 +229,7 @@ update msg model =
                                         milliseconds =
                                             Time.posixToMillis timeNow
                                     in
-                                    milliseconds // 1000
+                                    (milliseconds + 999) // 1000
 
                                 phase : Int
                                 phase =

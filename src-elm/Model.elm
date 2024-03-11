@@ -46,7 +46,7 @@ init channel =
             List.repeat slotsCount songEmpty
     in
     ( { channel = channel
-      , delaySeconds = 0
+      , delaySeconds = delayStandard
       , overallState = TimerIdle
       , slotsSelected = slotsSelectedInit
       , songsCurrent = songsCurrentInit
