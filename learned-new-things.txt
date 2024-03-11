@@ -65,6 +65,8 @@ https://package.elm-lang.org/packages/the-sett/elm-pointer/latest/
 https://stackoverflow.com/questions/38732946/does-elm-have-a-debugging-function-that-can-print-an-object-to-the-console/54260966#54260966
 https://thoughtbot.com/blog/decoding-json-structures-with-elm
 https://www.toptal.com/front-end/getting-started-elm-language
+https://faq.elm-community.org/
+
 
 https://korban.net/elm/book/
 https://harfangk.github.io/2018/12/18/elm-managing-ports.html
@@ -75,6 +77,7 @@ https://stackoverflow.com/questions/54379403/elm-0-19-how-to-obtain-request-body
 https://thoughtbot.com/blog/bridging-elm-and-javascript-with-ports
 https://elmprogramming.com/protecting-boundaries.html
 https://elmprogramming.com/sending-data-to-javascript.html
+https://medium.com/elm-shorts/intro-to-records-in-elm-51bc5e933a57
 
 Ref. from Setup.js:
 https://discourse.elm-lang.org/t/escaping-from-npm/7597/18
