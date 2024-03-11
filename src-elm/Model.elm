@@ -148,27 +148,28 @@ slotsCount =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        timer : Sub Msg
-        timer =
-            case model.overallState of
-                TimerIdle ->
-                    Sub.none
+        timerActivate : Sub Msg
+        timerActivate =
+            let
+                milliseconds : Float
+                milliseconds =
+                    toFloat (model.delaySeconds * 1000)
 
-                TimerActive ->
-                    let
-                        milliseconds : Float
-                        milliseconds =
-                            toFloat (model.delaySeconds * 1000)
+                timeNotSet : Bool
+                timeNotSet =
+                    Time.posixToMillis model.timeNow < 1000
+            in
+            if timeNotSet then
+                --Only when the program is freshly loaded.
+                Sub.none
 
-                        timeNotSet : Bool
-                        timeNotSet =
-                            Time.posixToMillis model.timeNow < 1000
-                    in
-                    if timeNotSet then
-                        Sub.none
-
-                    else
-                        --The first tick happens after the delay.
-                        Time.every milliseconds GotTimer
+            else
+                --The first tick happens after the delay.
+                Time.every milliseconds GotTimer
     in
-    timer
+    case model.overallState of
+        TimerIdle ->
+            Sub.none
+
+        TimerActive ->
+            timerActivate

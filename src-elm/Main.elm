@@ -133,10 +133,6 @@ update msg model =
         M.GotSongsResponse songsResult ->
             case songsResult of
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "songsResult error" ""
-                    in
                     ( { model
                         --Retry.
                         | overallState = M.TimerActive
