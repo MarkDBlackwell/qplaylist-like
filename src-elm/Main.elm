@@ -225,7 +225,7 @@ update msg model =
                                         milliseconds =
                                             Time.posixToMillis timeNow
                                     in
-                                    (milliseconds + 999) // 1000
+                                    milliseconds // 1000
 
                                 phase : Int
                                 phase =
@@ -237,11 +237,15 @@ update msg model =
                             in
                             nowSeconds - phase |> modBy standard
 
+                        preventCollision : Int
+                        preventCollision =
+                            1
+
                         standard : Int
                         standard =
                             M.delayStandard
                     in
-                    standard - over
+                    standard - over |> max preventCollision
             in
             ( { model
                 | delaySeconds = delaySeconds
