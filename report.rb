@@ -114,10 +114,8 @@ module Report
     extend self
 
     def run
-      time_start = 0
-      time_end = 0
-      pair = [time_start, time_end]
-      Window.define pair
+      time_start = Window.year_month_day_utc 2024, 2, 1
+      Window.define time_start
 
       SongDatabase.build
       process
@@ -180,11 +178,16 @@ module Report
   module Window
     extend self
 
-    def define(pair)
+    def define(t_start, t_end = ::Time.now)
+      @time_start, @time_end = t_start, t_end
     end
 
     def within?(time)
       true
+    end
+
+    def year_month_day_utc(year, month, day)
+      ::Time.new year, month, day, nil, nil, nil, 'Z'
     end
   end
 end
