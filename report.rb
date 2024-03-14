@@ -18,8 +18,8 @@ module ReportSystem
 
     def add(artist, title, toggle)
       addend = :l == toggle ? 1 : -1
-      song = Song.new artist, title
-      @likes[song] = @likes[song] + addend
+      key = Song.new artist, title
+      @likes[key] = @likes[key] + addend
       nil # Return nil.
     end
 
@@ -38,6 +38,11 @@ module ReportSystem
     end
 
     def process
+      @likes = @likes.reject do |key, value|
+        key.artist.empty? ||
+        key.title.empty? ||
+        value <= 0
+      end
       @likes.keys.each do |key|
         count = @likes[key]
         @songs[key] = @songs[key] + count
@@ -66,9 +71,9 @@ module ReportSystem
     extend self
 
     def run
-#      start = ::Date.new 2024, 2, 1
-      start = ::Date.new 2024, 3, 11
-      end_with = ::Date.new 2024, 3, 12
+      start = ::Date.new 2024, 2, 29
+      end_with = ::Date.new 2024, 3, 31
+      puts "Range of dates: #{start} through #{end_with} (inclusive)."
       Window.define start, end_with
       SongDatabase.build
       Likes.process
@@ -91,27 +96,24 @@ module ReportSystem
 #puts artists.sort.uniq.join(':')
 #puts titles.sort.uniq.join(':')
 
-      print "#{Likes.songs_count} songs found.\n"
+      print "#{Likes.artists_count} artists and\n"
+      print "#{Likes.songs_count} songs.\n"
 
-      print "\nSong popularity\n\n"
+      print "\nSong popularity:\n\n"
       a = Likes.songs_by_popularity
-      puts a.map { |key, count| "#{count} #{key.artist}: #{key.title}" }
+      puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
-      print "\nSong popularity, alphabetized by artist\n\n"
+      print "\nSongs (alphabetical by artist):\n\n"
       a = Likes.songs_alphabetized_by_artist
-      puts a.map { |key, count| "#{count} #{key.artist}: #{key.title}" }
+      puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
-      print "\n#{Likes.artists_count} artists found.\n"
-
-      print "\nArtist popularity\n\n"
+      print "\nArtist popularity:\n\n"
       a = Likes.artists_by_popularity
-      puts a.map { |key, count| "#{count} #{key.artist}" }
+      puts a.map { |key, count| "#{count} : #{key.artist}" }
 
-      print "\nArtist popularity, alphabetized by artist\n\n"
+      print "\nArtists (alphabetical):\n\n"
       a = Likes.artists_alphabetized
-      puts a.map { |key, count| "#{count} #{key.artist}" }
-      print "\n"
-
+      puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil # Return nil.
     end
   end
@@ -146,8 +148,8 @@ module ReportSystem
       end
       message = "Warning: #{lines_count_bad} lines were bad.\n\n"
       print message if lines_count_bad > 0
-      puts "#{lines.length} lines were read."
-      puts "#{lines_count_within} lines were within the selected date range."
+      puts "#{lines.length} lines read."
+      puts "Within the selected range of dates: #{lines_count_within} lines found, comprising"
       @raw.each { |e| Likes.add(e.artist, e.title, e.toggle) }
       nil # Return nil.
     end
