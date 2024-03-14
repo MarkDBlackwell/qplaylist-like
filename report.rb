@@ -3,11 +3,11 @@
 require 'date'
 
 module ReportSystem
-  Artist = ::Struct.new('Artist', :artist, :count)
+  Artist = ::Struct.new('Artist', :artist)
 
   Record = ::Struct.new('Record', :time, :ip, :toggle, :artist, :title)
 
-  Song = ::Struct.new('Song', :artist, :title, :count)
+  Song = ::Struct.new('Song', :artist, :title)
 
   module Likes
     extend self
@@ -18,35 +18,47 @@ module ReportSystem
 
     def add(artist, title, toggle)
       addend = :l == toggle ? 1 : -1
-      key = [artist, title]
-      @likes[key] = @likes[key] + addend
+      song = Song.new artist, title
+      @likes[song] = @likes[song] + addend
       nil # Return nil.
     end
 
     def artists_alphabetized
-      @artists.to_a.sort
+      keys_sorted = @artists.keys.sort { |a, b| [a.artist, @artists[a]] <=> [b.artist, @artists[b]] }
+      keys_sorted.map { |key| [key, @artists[key]] }
     end
 
     def artists_by_popularity
-      @artists.keys.sort { |a, b| @artists[b].count <=> a.count }
+      keys_sorted = @artists.keys.sort { |b, a| [@artists[a], a.artist] <=> [@artists[b], b.artist] }
+      keys_sorted.map { |key| [key, @artists[key]] }
+    end
+
+    def artists_count
+      @artists.length
     end
 
     def process
       @likes.keys.each do |key|
-        artist, title = key
         count = @likes[key]
         @songs[key] = @songs[key] + count
+        artist = Artist.new key.artist
         @artists[artist] = @artists[artist] + count
       end
       nil # Return nil.
     end
 
     def songs_alphabetized_by_artist
-      @songs.to_a.sort
+      keys_sorted = @songs.keys.sort { |a, b| [a.artist, a.title, @songs[a]] <=> [b.artist, b.title, @songs[b]] }
+      keys_sorted.map { |key| [key, @songs[key]] }
     end
 
     def songs_by_popularity
-      @songs.keys { |a, b| b.count <=> a.count }
+      keys_sorted = @songs.keys.sort { |b, a| [@songs[a], a.artist, a.title] <=> [@songs[b], b.artist, b.title] }
+      keys_sorted.map { |key| [key, @songs[key]] }
+    end
+
+    def songs_count
+      @songs.length
     end
   end
 
@@ -79,23 +91,26 @@ module ReportSystem
 #puts artists.sort.uniq.join(':')
 #puts titles.sort.uniq.join(':')
 
-      puts "Song popularity"
-      puts "#{Likes.songs_by_popularity.length} songs."
+      print "#{Likes.songs_count} songs found.\n"
+
+      print "\nSong popularity\n\n"
       a = Likes.songs_by_popularity
-      puts a.map { |e| "#{e.count} #{e.artist}: #{e.title}" }
+      puts a.map { |key, count| "#{count} #{key.artist}: #{key.title}" }
 
-      puts "Song popularity alphabetized by artist"
+      print "\nSong popularity, alphabetized by artist\n\n"
       a = Likes.songs_alphabetized_by_artist
-      puts a.map { |e| "#{e.count} #{e.artist}: #{e.title}" }
+      puts a.map { |key, count| "#{count} #{key.artist}: #{key.title}" }
 
-      puts "Artist popularity"
-      puts "#{Likes.artists_by_popularity.length} artists."
+      print "\n#{Likes.artists_count} artists found.\n"
+
+      print "\nArtist popularity\n\n"
       a = Likes.artists_by_popularity
-      puts a.map { |e| "#{e.count} #{e.artist}" }
+      puts a.map { |key, count| "#{count} #{key.artist}" }
 
-      puts "Artist popularity alphabetized by artist"
+      print "\nArtist popularity, alphabetized by artist\n\n"
       a = Likes.artists_alphabetized
-      puts a.map { |e| "#{e.count} #{e.artist}" }
+      puts a.map { |key, count| "#{count} #{key.artist}" }
+      print "\n"
 
       nil # Return nil.
     end
