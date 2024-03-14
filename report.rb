@@ -70,6 +70,7 @@
     end
 
 =end
+#####################################################################
 
 module Report
   Artist = ::Struct.new('Artist', :artist, :count)
@@ -113,6 +114,11 @@ module Report
     extend self
 
     def run
+      time_start = 0
+      time_end = 0
+      pair = [time_start, time_end]
+      Window.define pair
+
       SongDatabase.build
       process
     end
@@ -138,6 +144,7 @@ module Report
     @raw = []
 
     def build
+      time_field_match_index = 1
       bad_lines_count = 0
       lines.map do |line|
         md = regexp.match line
@@ -146,7 +153,7 @@ module Report
           next 
         end
         fields = 5.times.map { |i| md[i.succ].to_sym }
-        @raw.push Record.new(*fields)
+        @raw.push Record.new(*fields) if Window.within? md[time_field_match_index]
       end
       print "Warning: #{bad_lines_count} lines were bad.\n\n" if bad_lines_count > 0
       @raw.each { |e| Likes.add(e.artist, e.title, e.toggle) }
@@ -164,7 +171,20 @@ module Report
     end
 
     def regexp
+# The matched fields are: Time, IP, Toggle, Artist, and Title.
+#                                   Time       IP         Toggle       Artist          Title
       @regexp ||= ::Regexp.new(/^ *+([^ ]++) ++([^ ]++) ++([lu]) ++" *+(.*?) *+" ++" *+(.*?) *+" *+$/n)
+    end
+  end
+
+  module Window
+    extend self
+
+    def define(pair)
+    end
+
+    def within?(time)
+      true
     end
   end
 end
