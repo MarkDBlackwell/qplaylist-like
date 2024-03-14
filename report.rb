@@ -1,76 +1,16 @@
-
 # Copyright (C) 2024 Mark D. Blackwell. All rights reserved. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+require 'date'
 
 #time ip toggle artist title
 #time, ip, toggle, artist, title
 #times, ips, toggles, artists, titles
+
 # [times, ips, toggles, artists, titles].map { |e| puts e }
 #times, ips, toggles, artists, titles = unpacked.transpose
 # unpacked.map { |e| puts e.join ' : '}
 #puts artists.sort.uniq.join(':')
 #puts titles.sort.uniq.join(':')
-
-=begin
-  class Likes
-    attr_reader :like
-    def initialize(like)
-      @like = like
-    end
-  end
-
-  class LikesByArtistTitleToggle < Likes
-    def <=>(other)
-      self.like.
-      artist, title, toggle <=> other.like.artist
-    end
-  end
-
-  class Song < Array
-    attr_reader :artist, :title, :count
-    def initialize(artist, title, count)
-      @artist, @title, @count = artist, title, count
-    end
-  end
-
-  class SongLike
-    attr_reader :time, :ip, :artist, :title
-
-    def initialize(time, ip, artist, title)
-      @time, @ip, @artist, @title = time, ip, artist, title
-    end
-  end
-  class Like < Array
-    attr_reader :time, :ip, :toggle, :artist, :title
-
-    def initialize(time, ip, toggle, artist, title)
-      @time, @ip, @toggle, @artist, @title = time, ip, toggle, artist, title
-    end
-  end
-    def songs
-  end
-    def artist_count(artist)
-    end
-
-    def artists
-    end
-
-    def songs
-    end
-
-    def titles
-    end
-
-    def likes(artist, title)
-      key = [artist, title]
-      @likes[key]
-    end
-
-    def songs
-      @likes.keys
-    end
-
-=end
-#####################################################################
 
 module Report
   Artist = ::Struct.new('Artist', :artist, :count)
@@ -114,9 +54,9 @@ module Report
     extend self
 
     def run
-      time_start = Window.year_month_day_utc 2024, 2, 1
-      Window.define time_start
-
+      start = ::Date.new 2024, 3, 12
+      end_with = ::Date.new 2024, 3, 12
+      Window.define start, end_with
       SongDatabase.build
       process
     end
@@ -142,7 +82,7 @@ module Report
     @raw = []
 
     def build
-      time_field_match_index = 1
+      time_index = 1
       bad_lines_count = 0
       lines.map do |line|
         md = regexp.match line
@@ -151,7 +91,7 @@ module Report
           next 
         end
         fields = 5.times.map { |i| md[i.succ].to_sym }
-        @raw.push Record.new(*fields) if Window.within? md[time_field_match_index]
+        @raw.push Record.new(*fields) if Window.within? md[time_index]
       end
       print "Warning: #{bad_lines_count} lines were bad.\n\n" if bad_lines_count > 0
       @raw.each { |e| Likes.add(e.artist, e.title, e.toggle) }
@@ -178,16 +118,18 @@ module Report
   module Window
     extend self
 
-    def define(t_start, t_end = ::Time.now)
-      @time_start, @time_end = t_start, t_end
+    def define(beginning, ending = nil)
+      @beginning, @ending = beginning, ending
     end
 
-    def within?(time)
-      true
-    end
-
-    def year_month_day_utc(year, month, day)
-      ::Time.new year, month, day, nil, nil, nil, 'Z'
+    def within?(date_raw)
+      date = ::Date.iso8601 date_raw
+      unless @ending
+        @beginning <= date
+      else
+        @beginning <= date &&
+        date <= @ending
+      end
     end
   end
 end
