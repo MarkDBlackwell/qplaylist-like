@@ -4,38 +4,6 @@ require 'date'
 require 'open-uri'
 
 module ReportSystem
-  module Songs
-    extend self
-
-    attr_reader :songs
-
-    Song = ::Data.define :artist, :title
-
-    @songs_raw = ::Hash.new 0
-
-    def build
-      Records.records.each { |e| add(e.artist, e.title, e.toggle) }
-    end
-
-    def filter
-      @songs = @songs_raw.reject do |key, value|
-        all_empty = key.artist.empty? && key.title.empty?
-# An Unlike may be paired with a Like prior to our window.
-        all_empty || value <= 0
-      end
-      nil
-    end
-
-    private
-
-    def add(artist, title, toggle)
-      addend = :l == toggle ? 1 : -1
-      key = Song.new artist, title
-      @songs_raw[key] += addend
-      nil
-    end
-  end
-
   module Database
     extend self
 
@@ -130,40 +98,6 @@ module ReportSystem
     end
   end
 
-  module Report
-    extend self
-
-    OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
-
-    def print_alphabetical
-      OUT_SECOND.puts "Songs (alphabetical by artist):\n\n"
-      a = Database.songs_alphabetized_by_artist
-      OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
-
-      OUT_SECOND.puts "\nArtists (alphabetical):\n\n"
-      a = Database.artists_alphabetized
-      OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.artist}" }
-      nil
-    end
-
-    def print_popularity
-      puts "\nSong popularity:\n\n"
-      a = Database.songs_by_popularity
-      puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
-
-      puts "\nArtist popularity:\n\n"
-      a = Database.artists_by_popularity
-      puts a.map { |key, count| "#{count} : #{key.artist}" }
-      nil
-    end
-
-    def print_summary
-      puts "#{Database.artists_count} artists and"
-      puts "#{Database.songs_count} songs."
-      nil
-    end
-  end
-
   module Records
     extend self
 
@@ -204,6 +138,72 @@ module ReportSystem
       puts "#{LINES.length} total customer interactions read. Within the selected range of dates:"
       puts "#{lines_count_within} interactions found, comprising"
 # The Report module prints next.
+      nil
+    end
+  end
+
+  module Report
+    extend self
+
+    OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
+
+    def print_alphabetical
+      OUT_SECOND.puts "Songs (alphabetical by artist):\n\n"
+      a = Database.songs_alphabetized_by_artist
+      OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
+
+      OUT_SECOND.puts "\nArtists (alphabetical):\n\n"
+      a = Database.artists_alphabetized
+      OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.artist}" }
+      nil
+    end
+
+    def print_popularity
+      puts "\nSong popularity:\n\n"
+      a = Database.songs_by_popularity
+      puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
+
+      puts "\nArtist popularity:\n\n"
+      a = Database.artists_by_popularity
+      puts a.map { |key, count| "#{count} : #{key.artist}" }
+      nil
+    end
+
+    def print_summary
+      puts "#{Database.artists_count} artists and"
+      puts "#{Database.songs_count} songs."
+      nil
+    end
+  end
+
+  module Songs
+    extend self
+
+    attr_reader :songs
+
+    Song = ::Data.define :artist, :title
+
+    @songs_raw = ::Hash.new 0
+
+    def build
+      Records.records.each { |e| add(e.artist, e.title, e.toggle) }
+    end
+
+    def filter
+      @songs = @songs_raw.reject do |key, value|
+        all_empty = key.artist.empty? && key.title.empty?
+# An Unlike may be paired with a Like prior to our window.
+        all_empty || value <= 0
+      end
+      nil
+    end
+
+    private
+
+    def add(artist, title, toggle)
+      addend = :l == toggle ? 1 : -1
+      key = Song.new artist, title
+      @songs_raw[key] += addend
       nil
     end
   end
