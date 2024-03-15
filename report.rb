@@ -4,6 +4,8 @@ require 'date'
 require 'open-uri'
 
 module ReportSystem
+  OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
+
 # TODO: consider using class Data.
   Artist = ::Struct.new('Artist', :artist)
 
@@ -21,7 +23,7 @@ module ReportSystem
     def add(artist, title, toggle)
       addend = :l == toggle ? 1 : -1
       key = Song.new artist, title
-      @likes[key] = @likes[key] + addend
+      @likes[key] += addend
       nil
     end
 
@@ -41,15 +43,14 @@ module ReportSystem
 
     def process
       @likes = @likes.reject do |key, value|
-        key.artist.empty? ||
-        key.title.empty? ||
-        value <= 0
+        all_empty = key.artist.empty? && key.title.empty?
+        all_empty || value <= 0
       end
       @likes.keys.each do |key|
         count = @likes[key]
-        @songs[key] = @songs[key] + count
+        @songs[key] += count
         artist = Artist.new key.artist
-        @artists[artist] = @artists[artist] + count
+        @artists[artist] += count
       end
       nil
     end
@@ -72,37 +73,49 @@ module ReportSystem
   module Main
     extend self
 
-    YESTERDAY = ::Date.today - 1
+    FILENAME_OUT = 'var/song-likes-report-first.txt'
+
+    FIRST = begin
+      argument = ::ARGV[0]
+      message = "The first command-line argument must be a valid date."
+      ::Kernel.abort message unless argument
+      ::Date.parse argument
+    end
+
+    LAST = begin
+      yesterday = ::Date.today - 1
+      argument = ::ARGV[1]
+      argument ? (::Date.parse argument) : yesterday
+    end
 
     def run
-      $stdout = File.open 'var/song-likes-report-first.txt', 'w'
-      start = ::Date.parse ARGV[0]
-      end_with = YESTERDAY
-      puts "Range of dates: #{start} through #{end_with} (inclusive)."
-      Window.define start, end_with
+      $stdout = File.open FILENAME_OUT, 'w'
+      puts "Range of dates: #{FIRST} through #{LAST} (inclusive)."
+      Window.define FIRST, LAST
       SongDatabase.build
       Likes.process
-      Reports.process
-      Reports.process_alphabetical
+      Report.print_summary
+      Report.print_alphabetical
+      Report.print_popularity
       nil
     end
   end
 
-  module MyFile
+  module Report
     extend self
 
-    def out_second
-      @out_second ||= File.open 'var/song-likes-report-second.txt', 'w'
+    def print_alphabetical
+      OUT_SECOND.puts "Songs (alphabetical by artist):\n\n"
+      a = Likes.songs_alphabetized_by_artist
+      OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
+
+      OUT_SECOND.puts "\nArtists (alphabetical):\n\n"
+      a = Likes.artists_alphabetized
+      OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.artist}" }
+      nil
     end
-  end
 
-  module Reports
-    extend self
-
-    def process
-      puts "#{Likes.artists_count} artists and"
-      puts "#{Likes.songs_count} songs."
-
+    def print_popularity
       puts "\nSong popularity:\n\n"
       a = Likes.songs_by_popularity
       puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
@@ -113,14 +126,9 @@ module ReportSystem
       nil
     end
 
-    def process_alphabetical
-      MyFile.out_second.puts "Songs (alphabetical by artist):\n\n"
-      a = Likes.songs_alphabetized_by_artist
-      MyFile.out_second.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
-
-      MyFile.out_second.puts "\nArtists (alphabetical):\n\n"
-      a = Likes.artists_alphabetized
-      MyFile.out_second.puts a.map { |key, count| "#{count} : #{key.artist}" }
+    def print_summary
+      puts "#{Likes.artists_count} artists and"
+      puts "#{Likes.songs_count} songs."
       nil
     end
   end
@@ -129,7 +137,7 @@ module ReportSystem
     extend self
 
     TIME_INDEX = 1
-    URI_INPUT = 'https://wtmd.org/like/like.txt'
+    URI_IN = 'https://wtmd.org/like/like.txt'
 
 # The matched fields are: Time, IP, Toggle, Artist, and Title.
 #                              Time       IP         Toggle       Artist          Title
@@ -137,7 +145,7 @@ module ReportSystem
 
 # Depends on previous:
 
-    LINES = ::URI.open(URI_INPUT) { |f| f.readlines }
+    LINES = ::URI.open(URI_IN) { |f| f.readlines }
 
     @raw = []
 
@@ -169,19 +177,15 @@ module ReportSystem
   module Window
     extend self
 
-    def define(beginning, ending = nil)
-      @beginning, @ending = beginning, ending
+    def define(*parms)
+      @beginning, @ending = parms
       nil
     end
 
     def within?(date_raw)
       date = ::Date.iso8601 date_raw
-      unless @ending
-        @beginning <= date
-      else
-        @beginning <= date &&
-        date <= @ending
-      end
+      date >= @beginning &&
+          date <= @ending
     end
   end
 end
