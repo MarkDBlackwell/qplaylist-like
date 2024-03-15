@@ -22,12 +22,20 @@ module ReportSystem
     end
 
     def artists_alphabetized
-      keys_sorted = @artists.keys.sort { |a, b| [a.artist, @artists[a]] <=> [b.artist, @artists[b]] }
+      keys_sorted = @artists.keys.sort do |a, b|
+        [a.artist.upcase, @artists[a]] <=> [b.artist.upcase, @artists[b]]
+      end
       keys_sorted.map { |key| [key, @artists[key]] }
     end
 
     def artists_by_popularity
-      keys_sorted = @artists.keys.sort { |b, a| [@artists[a], a.artist] <=> [@artists[b], b.artist] }
+      keys_sorted = @artists.keys.sort do |a, b|
+        unless @artists[a] == @artists[b]
+          @artists[b] <=> @artists[a]
+        else
+          a.artist.upcase <=> b.artist.upcase
+        end
+      end
       keys_sorted.map { |key| [key, @artists[key]] }
     end
 
@@ -50,12 +58,20 @@ module ReportSystem
     end
 
     def songs_alphabetized_by_artist
-      keys_sorted = @songs.keys.sort { |a, b| [a.artist, a.title, @songs[a]] <=> [b.artist, b.title, @songs[b]] }
+      keys_sorted = @songs.keys.sort do |a, b|
+        [a.artist.upcase, a.title.upcase, @songs[a]] <=> [b.artist.upcase, b.title.upcase, @songs[b]]
+      end
       keys_sorted.map { |key| [key, @songs[key]] }
     end
 
     def songs_by_popularity
-      keys_sorted = @songs.keys.sort { |b, a| [@songs[a], a.artist, a.title] <=> [@songs[b], b.artist, b.title] }
+      keys_sorted = @songs.keys.sort do |a, b|
+        unless @songs[a] == @songs[b]
+          @songs[b] <=> @songs[a]
+        else
+          [a.artist.upcase, a.title.upcase] <=> [b.artist.upcase, b.title.upcase]
+        end
+      end
       keys_sorted.map { |key| [key, @songs[key]] }
     end
 
