@@ -23,21 +23,23 @@ module ReportSystem
     extend self
 
     def artists_alphabetized
-      keys_sorted = Artists.artists.keys.sort do |a, b|
-        [a.artist.upcase, Artists.artists[a]] <=> [b.artist.upcase, Artists.artists[b]]
+      artists = Artists.artists
+      keys_sorted = artists.keys.sort do |a, b|
+        [a.artist.upcase, artists[a]] <=> [b.artist.upcase, artists[b]]
       end
-      keys_sorted.map { |key| [key, Artists.artists[key]] }
+      keys_sorted.map { |key| [key, artists[key]] }
     end
 
     def artists_by_popularity
-      keys_sorted = Artists.artists.keys.sort do |a, b|
-        unless Artists.artists[a] == Artists.artists[b]
-          Artists.artists[b] <=> Artists.artists[a]
+      artists = Artists.artists
+      keys_sorted = artists.keys.sort do |a, b|
+        unless artists[a] == artists[b]
+          artists[b] <=> artists[a]
         else
           a.artist.upcase <=> b.artist.upcase
         end
       end
-      keys_sorted.map { |key| [key, Artists.artists[key]] }
+      keys_sorted.map { |key| [key, artists[key]] }
     end
 
     def artists_count
@@ -45,21 +47,23 @@ module ReportSystem
     end
 
     def songs_alphabetized_by_artist
-      keys_sorted = Songs.songs.keys.sort do |a, b|
-        [a.artist.upcase, a.title.upcase, Songs.songs[a]] <=> [b.artist.upcase, b.title.upcase, Songs.songs[b]]
+      songs = Songs.songs
+      keys_sorted = songs.keys.sort do |a, b|
+        [a.artist.upcase, a.title.upcase, songs[a]] <=> [b.artist.upcase, b.title.upcase, songs[b]]
       end
-      keys_sorted.map { |key| [key, Songs.songs[key]] }
+      keys_sorted.map { |key| [key, songs[key]] }
     end
 
     def songs_by_popularity
-      keys_sorted = Songs.songs.keys.sort do |a, b|
-        unless Songs.songs[a] == Songs.songs[b]
-          Songs.songs[b] <=> Songs.songs[a]
+      songs = Songs.songs
+      keys_sorted = songs.keys.sort do |a, b|
+        unless songs[a] == songs[b]
+          songs[b] <=> songs[a]
         else
           [a.artist.upcase, a.title.upcase] <=> [b.artist.upcase, b.title.upcase]
         end
       end
-      keys_sorted.map { |key| [key, Songs.songs[key]] }
+      keys_sorted.map { |key| [key, songs[key]] }
     end
 
     def songs_count
@@ -74,7 +78,7 @@ module ReportSystem
 
     FIRST = begin
       argument = ::ARGV[0]
-      message = "The first command-line argument must be a valid date."
+      message = 'The first command-line argument must be a valid date.'
       ::Kernel.abort message unless argument
       ::Date.parse argument
     end
@@ -86,15 +90,13 @@ module ReportSystem
     end
 
     def run
-      $stdout = File.open FILENAME_OUT, 'w'
+      $stdout = ::File.open FILENAME_OUT, 'w'
       puts "Range of dates: #{FIRST} through #{LAST} (inclusive)."
       Window.define FIRST, LAST
       Records.transcribe
       Songs.build
       Artists.build
-      Report.print_summary
-      Report.print_popularity
-      Report.print_alphabetical
+      Report.print
       nil
     end
   end
@@ -148,6 +150,15 @@ module ReportSystem
 
     OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
 
+    def print
+      print_summary
+      print_popularity
+      print_alphabetical
+      nil
+    end
+
+    private
+
     def print_alphabetical
       OUT_SECOND.puts "Songs (alphabetical by artist):\n\n"
       a = Database.songs_alphabetized_by_artist
@@ -188,7 +199,8 @@ module ReportSystem
 
     def build
       Records.records.each { |e| add(e.artist, e.title, e.toggle) }
-      filter
+      @songs = filter
+      nil
     end
 
     private
@@ -201,12 +213,11 @@ module ReportSystem
     end
 
     def filter
-      @songs = @raw.reject do |key, count|
+      @raw.reject do |key, count|
         all_empty = key.artist.empty? && key.title.empty?
 # An Unlike in our window may be paired with a Like prior to it.
         all_empty || count <= 0
       end
-      nil
     end
   end
 
