@@ -4,17 +4,11 @@ require 'date'
 require 'open-uri'
 
 module ReportSystem
-  OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
-
-# TODO: consider using class Data.
-  Artist = ::Struct.new('Artist', :artist)
-
-  Record = ::Struct.new('Record', :time, :ip, :toggle, :artist, :title)
-
-  Song = ::Struct.new('Song', :artist, :title)
-
   module Likes
     extend self
+
+    Artist = ::Data.define :artist
+    Song = ::Data.define :artist, :title
 
     @artists = ::Hash.new 0
     @likes = ::Hash.new 0
@@ -104,6 +98,8 @@ module ReportSystem
   module Report
     extend self
 
+    OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
+
     def print_alphabetical
       OUT_SECOND.puts "Songs (alphabetical by artist):\n\n"
       a = Likes.songs_alphabetized_by_artist
@@ -136,12 +132,14 @@ module ReportSystem
   module SongDatabase
     extend self
 
-    TIME_INDEX = 1
-    URI_IN = 'https://wtmd.org/like/like.txt'
+    Record = ::Data.define :time, :ip, :toggle, :artist, :title
 
 # The matched fields are: Time, IP, Toggle, Artist, and Title.
 #                              Time       IP         Toggle       Artist          Title
     REGEXP = ::Regexp.new(/^ *+([^ ]++) ++([^ ]++) ++([lu]) ++" *+(.*?) *+" ++" *+(.*?) *+" *+$/n)
+
+    TIME_INDEX = 1
+    URI_IN = 'https://wtmd.org/like/like.txt'
 
 # Depends on previous:
 
