@@ -20,7 +20,7 @@ module ReportSystem
     def filter
       @songs = @songs_raw.reject do |key, value|
         all_empty = key.artist.empty? && key.title.empty?
-# Handle any Like/Unlike pairs which span a border date.
+# An Unlike may be paired with a Like prior to our window.
         all_empty || value <= 0
       end
       nil
@@ -35,13 +35,13 @@ module ReportSystem
       nil
     end
   end
+
   module Database
     extend self
 
     Artist = ::Data.define :artist
 
     @artists = ::Hash.new 0
-    @songs = ::Hash.new 0
 
     def artists_alphabetized
       keys_sorted = @artists.keys.sort do |a, b|
@@ -68,7 +68,6 @@ module ReportSystem
     def build
       Songs.songs.keys.each do |key|
         count = Songs.songs[key]
-        @songs[key] += count
         artist = Artist.new key.artist
         @artists[artist] += count
       end
@@ -76,25 +75,25 @@ module ReportSystem
     end
 
     def songs_alphabetized_by_artist
-      keys_sorted = @songs.keys.sort do |a, b|
-        [a.artist.upcase, a.title.upcase, @songs[a]] <=> [b.artist.upcase, b.title.upcase, @songs[b]]
+      keys_sorted = Songs.songs.keys.sort do |a, b|
+        [a.artist.upcase, a.title.upcase, Songs.songs[a]] <=> [b.artist.upcase, b.title.upcase, Songs.songs[b]]
       end
-      keys_sorted.map { |key| [key, @songs[key]] }
+      keys_sorted.map { |key| [key, Songs.songs[key]] }
     end
 
     def songs_by_popularity
-      keys_sorted = @songs.keys.sort do |a, b|
-        unless @songs[a] == @songs[b]
-          @songs[b] <=> @songs[a]
+      keys_sorted = Songs.songs.keys.sort do |a, b|
+        unless Songs.songs[a] == Songs.songs[b]
+          Songs.songs[b] <=> Songs.songs[a]
         else
           [a.artist.upcase, a.title.upcase] <=> [b.artist.upcase, b.title.upcase]
         end
       end
-      keys_sorted.map { |key| [key, @songs[key]] }
+      keys_sorted.map { |key| [key, Songs.songs[key]] }
     end
 
     def songs_count
-      @songs.length
+      Songs.songs.length
     end
   end
 
