@@ -34,11 +34,7 @@ module ReportSystem
     end
 
     def build
-      Songs.songs.keys.each do |key|
-        count = Songs.songs[key]
-        artist = Artist.new key.artist
-        @artists[artist] += count
-      end
+      Songs.songs.each_pair { |key, count| @artists[Artist.new key.artist] += count }
       nil
     end
 
@@ -192,7 +188,7 @@ module ReportSystem
     def filter
       @songs = @songs_raw.reject do |key, value|
         all_empty = key.artist.empty? && key.title.empty?
-# An Unlike may be paired with a Like prior to our window.
+# An Unlike in our window may be paired with a Like prior to it.
         all_empty || value <= 0
       end
       nil
