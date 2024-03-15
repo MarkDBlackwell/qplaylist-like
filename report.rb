@@ -4,6 +4,7 @@ require 'date'
 require 'open-uri'
 
 module ReportSystem
+# TODO: consider using class Data.
   Artist = ::Struct.new('Artist', :artist)
 
   Record = ::Struct.new('Record', :time, :ip, :toggle, :artist, :title)
@@ -71,10 +72,12 @@ module ReportSystem
   module Main
     extend self
 
+    YESTERDAY = ::Date.today - 1
+
     def run
       $stdout = File.open 'var/song-likes-report-first.txt', 'w'
-      start = ::Date.new 2024, 2, 29
-      end_with = ::Date.new 2024, 3, 31
+      start = ::Date.parse ARGV[0]
+      end_with = YESTERDAY
       puts "Range of dates: #{start} through #{end_with} (inclusive)."
       Window.define start, end_with
       SongDatabase.build
