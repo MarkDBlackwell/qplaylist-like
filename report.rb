@@ -4,22 +4,44 @@ require 'date'
 require 'open-uri'
 
 module ReportSystem
-  module SongDatabase
+  module Songs
     extend self
 
-    Artist = ::Data.define :artist
+    attr_reader :songs
+
     Song = ::Data.define :artist, :title
 
-    @artists = ::Hash.new 0
-    @likes_raw = ::Hash.new 0
-    @songs = ::Hash.new 0
+    @songs_raw = ::Hash.new 0
+
+    def build
+      Records.records.each { |e| add(e.artist, e.title, e.toggle) }
+    end
+
+    def filter
+      @songs = @songs_raw.reject do |key, value|
+        all_empty = key.artist.empty? && key.title.empty?
+# Handle any Like/Unlike pairs which span a border date.
+        all_empty || value <= 0
+      end
+      nil
+    end
+
+    private
 
     def add(artist, title, toggle)
       addend = :l == toggle ? 1 : -1
       key = Song.new artist, title
-      @likes_raw[key] += addend
+      @songs_raw[key] += addend
       nil
     end
+  end
+  module Database
+    extend self
+
+    Artist = ::Data.define :artist
+
+    @artists = ::Hash.new 0
+    @songs = ::Hash.new 0
 
     def artists_alphabetized
       keys_sorted = @artists.keys.sort do |a, b|
@@ -43,14 +65,9 @@ module ReportSystem
       @artists.length
     end
 
-    def process
-      @likes = @likes_raw.reject do |key, value|
-        all_empty = key.artist.empty? && key.title.empty?
-# Handle any Like/Unlike pairs which span a border date.
-        all_empty || value <= 0
-      end
-      @likes.keys.each do |key|
-        count = @likes[key]
+    def build
+      Songs.songs.keys.each do |key|
+        count = Songs.songs[key]
         @songs[key] += count
         artist = Artist.new key.artist
         @artists[artist] += count
@@ -103,8 +120,10 @@ module ReportSystem
       $stdout = File.open FILENAME_OUT, 'w'
       puts "Range of dates: #{FIRST} through #{LAST} (inclusive)."
       Window.define FIRST, LAST
-      Records.build
-      SongDatabase.process
+      Records.transcribe
+      Songs.build
+      Songs.filter
+      Database.build
       Report.print_summary
       Report.print_popularity
       Report.print_alphabetical
@@ -119,29 +138,29 @@ module ReportSystem
 
     def print_alphabetical
       OUT_SECOND.puts "Songs (alphabetical by artist):\n\n"
-      a = SongDatabase.songs_alphabetized_by_artist
+      a = Database.songs_alphabetized_by_artist
       OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
       OUT_SECOND.puts "\nArtists (alphabetical):\n\n"
-      a = SongDatabase.artists_alphabetized
+      a = Database.artists_alphabetized
       OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil
     end
 
     def print_popularity
       puts "\nSong popularity:\n\n"
-      a = SongDatabase.songs_by_popularity
+      a = Database.songs_by_popularity
       puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
       puts "\nArtist popularity:\n\n"
-      a = SongDatabase.artists_by_popularity
+      a = Database.artists_by_popularity
       puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil
     end
 
     def print_summary
-      puts "#{SongDatabase.artists_count} artists and"
-      puts "#{SongDatabase.songs_count} songs."
+      puts "#{Database.artists_count} artists and"
+      puts "#{Database.songs_count} songs."
       nil
     end
   end
@@ -149,7 +168,7 @@ module ReportSystem
   module Records
     extend self
 
-    Record = ::Data.define :time, :ip, :toggle, :artist, :title
+    attr_reader :records
 
 # The matched fields are: Time, IP, Toggle, Artist, and Title.
 #                              Time       IP         Toggle       Artist          Title
@@ -159,12 +178,13 @@ module ReportSystem
     URI_IN = 'https://wtmd.org/like/like.txt'
 
 # Depends on previous:
-
     LINES = ::URI.open(URI_IN) { |f| f.readlines }
+
+    Record = ::Data.define :time, :ip, :toggle, :artist, :title
 
     @records = []
 
-    def build
+    def transcribe
       lines_count_within = 0
       lines_count_bad = 0
 
@@ -185,7 +205,6 @@ module ReportSystem
       puts "#{LINES.length} total customer interactions read. Within the selected range of dates:"
       puts "#{lines_count_within} interactions found, comprising"
 # The Report module prints next.
-      @records.each { |e| SongDatabase.add(e.artist, e.title, e.toggle) }
       nil
     end
   end
