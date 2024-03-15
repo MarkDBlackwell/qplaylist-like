@@ -1,6 +1,7 @@
 # Copyright (C) 2024 Mark D. Blackwell. All rights reserved. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 require 'date'
+require 'open-uri'
 
 module ReportSystem
   Artist = ::Struct.new('Artist', :artist)
@@ -20,7 +21,7 @@ module ReportSystem
       addend = :l == toggle ? 1 : -1
       key = Song.new artist, title
       @likes[key] = @likes[key] + addend
-      nil # Return nil.
+      nil
     end
 
     def artists_alphabetized
@@ -49,7 +50,7 @@ module ReportSystem
         artist = Artist.new key.artist
         @artists[artist] = @artists[artist] + count
       end
-      nil # Return nil.
+      nil
     end
 
     def songs_alphabetized_by_artist
@@ -71,6 +72,7 @@ module ReportSystem
     extend self
 
     def run
+      $stdout = File.open 'var/song-likes-report-first.txt', 'w'
       start = ::Date.new 2024, 2, 29
       end_with = ::Date.new 2024, 3, 31
       puts "Range of dates: #{start} through #{end_with} (inclusive)."
@@ -78,7 +80,16 @@ module ReportSystem
       SongDatabase.build
       Likes.process
       Reports.process
-      nil # Return nil.
+      Reports.process_alphabetical
+      nil
+    end
+  end
+
+  module MyFile
+    extend self
+
+    def out_second
+      @out_second ||= File.open 'var/song-likes-report-second.txt', 'w'
     end
   end
 
@@ -86,47 +97,44 @@ module ReportSystem
     extend self
 
     def process
-#time ip toggle artist title
-#time, ip, toggle, artist, title
-#times, ips, toggles, artists, titles
+      puts "#{Likes.artists_count} artists and"
+      puts "#{Likes.songs_count} songs."
 
-# [times, ips, toggles, artists, titles].map { |e| puts e }
-#times, ips, toggles, artists, titles = unpacked.transpose
-# unpacked.map { |e| puts e.join ' : '}
-#puts artists.sort.uniq.join(':')
-#puts titles.sort.uniq.join(':')
-
-      print "#{Likes.artists_count} artists and\n"
-      print "#{Likes.songs_count} songs.\n"
-
-      print "\nSong popularity:\n\n"
+      puts "\nSong popularity:\n"
       a = Likes.songs_by_popularity
       puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
-      print "\nSongs (alphabetical by artist):\n\n"
-      a = Likes.songs_alphabetized_by_artist
-      puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
-
-      print "\nArtist popularity:\n\n"
+      puts "\nArtist popularity:\n"
       a = Likes.artists_by_popularity
       puts a.map { |key, count| "#{count} : #{key.artist}" }
+      nil
+    end
 
-      print "\nArtists (alphabetical):\n\n"
+    def process_alphabetical
+      MyFile.out_second.puts "Songs (alphabetical by artist):\n"
+      a = Likes.songs_alphabetized_by_artist
+      MyFile.out_second.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
+
+      MyFile.out_second.puts "\nArtists (alphabetical):\n"
       a = Likes.artists_alphabetized
-      puts a.map { |key, count| "#{count} : #{key.artist}" }
-      nil # Return nil.
+      MyFile.out_second.puts a.map { |key, count| "#{count} : #{key.artist}" }
+      nil
     end
   end
 
   module SongDatabase
     extend self
 
-    FILENAME = 'var/like.txt'
     TIME_INDEX = 1
+    URI_INPUT = 'https://wtmd.org/like/like.txt'
 
 # The matched fields are: Time, IP, Toggle, Artist, and Title.
 #                              Time       IP         Toggle       Artist          Title
     REGEXP = ::Regexp.new(/^ *+([^ ]++) ++([^ ]++) ++([lu]) ++" *+(.*?) *+" ++" *+(.*?) *+" *+$/n)
+
+# Depends on previous:
+
+    LINES = ::URI.open(URI_INPUT) { |f| f.readlines }
 
     @raw = []
 
@@ -134,7 +142,7 @@ module ReportSystem
       lines_count_within = 0
       lines_count_bad = 0
 
-      lines.map do |line|
+      LINES.map do |line|
         md = REGEXP.match line
         unless md
           lines_count_bad += 1
@@ -146,18 +154,12 @@ module ReportSystem
           @raw.push Record.new(*fields)
         end
       end
-      message = "Warning: #{lines_count_bad} lines were bad.\n\n"
-      print message if lines_count_bad > 0
-      puts "#{lines.length} lines read."
+      message = "Warning: #{lines_count_bad} lines were bad.\n"
+      $stderr.puts message if lines_count_bad > 0
+      puts "#{LINES.length} lines read."
       puts "Within the selected range of dates: #{lines_count_within} lines found, comprising"
       @raw.each { |e| Likes.add(e.artist, e.title, e.toggle) }
-      nil # Return nil.
-    end
-
-    private
-
-    def lines
-      @lines ||= ::IO.readlines(FILENAME).map &:chomp
+      nil
     end
   end
 
@@ -166,7 +168,7 @@ module ReportSystem
 
     def define(beginning, ending = nil)
       @beginning, @ending = beginning, ending
-      nil # Return nil.
+      nil
     end
 
     def within?(date_raw)
