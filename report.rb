@@ -11,13 +11,13 @@ module ReportSystem
     Song = ::Data.define :artist, :title
 
     @artists = ::Hash.new 0
-    @likes = ::Hash.new 0
+    @likes_raw = ::Hash.new 0
     @songs = ::Hash.new 0
 
     def add(artist, title, toggle)
       addend = :l == toggle ? 1 : -1
       key = Song.new artist, title
-      @likes[key] += addend
+      @likes_raw[key] += addend
       nil
     end
 
@@ -44,8 +44,9 @@ module ReportSystem
     end
 
     def process
-      @likes = @likes.reject do |key, value|
+      @likes = @likes_raw.reject do |key, value|
         all_empty = key.artist.empty? && key.title.empty?
+# Handle any Like/Unlike pairs which span a border date.
         all_empty || value <= 0
       end
       @likes.keys.each do |key|
@@ -105,8 +106,8 @@ module ReportSystem
       SongDatabase.build
       Likes.process
       Report.print_summary
-      Report.print_alphabetical
       Report.print_popularity
+      Report.print_alphabetical
       nil
     end
   end
@@ -161,7 +162,7 @@ module ReportSystem
 
     LINES = ::URI.open(URI_IN) { |f| f.readlines }
 
-    @raw = []
+    @records = []
 
     def build
       lines_count_within = 0
@@ -176,14 +177,15 @@ module ReportSystem
         fields = 5.times.map { |i| md[i.succ].to_sym }
         if Window.within? md[TIME_INDEX]
           lines_count_within += 1
-          @raw.push Record.new(*fields)
+          @records.push Record.new(*fields)
         end
       end
-      message = "Warning: #{lines_count_bad} lines were bad.\n"
+      message = "Warning: #{lines_count_bad} interaction records were bad.\n"
       $stderr.puts message if lines_count_bad > 0
-      puts "#{LINES.length} lines read."
-      puts "Within the selected range of dates: #{lines_count_within} lines found, comprising"
-      @raw.each { |e| Likes.add(e.artist, e.title, e.toggle) }
+      puts "#{LINES.length} total customer interactions read. Within the selected range of dates:"
+      puts "#{lines_count_within} interactions found, comprising"
+# The Report module prints next.
+      @records.each { |e| Likes.add(e.artist, e.title, e.toggle) }
       nil
     end
   end
