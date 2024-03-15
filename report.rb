@@ -4,38 +4,44 @@ require 'date'
 require 'open-uri'
 
 module ReportSystem
-  module Database
+  module Artists
     extend self
+
+    attr_reader :artists
 
     Artist = ::Data.define :artist
 
     @artists = ::Hash.new 0
 
+    def build
+      Songs.songs.each_pair { |key, count| @artists[Artist.new key.artist] += count }
+      nil
+    end
+  end
+
+  module Database
+    extend self
+
     def artists_alphabetized
-      keys_sorted = @artists.keys.sort do |a, b|
-        [a.artist.upcase, @artists[a]] <=> [b.artist.upcase, @artists[b]]
+      keys_sorted = Artists.artists.keys.sort do |a, b|
+        [a.artist.upcase, Artists.artists[a]] <=> [b.artist.upcase, Artists.artists[b]]
       end
-      keys_sorted.map { |key| [key, @artists[key]] }
+      keys_sorted.map { |key| [key, Artists.artists[key]] }
     end
 
     def artists_by_popularity
-      keys_sorted = @artists.keys.sort do |a, b|
-        unless @artists[a] == @artists[b]
-          @artists[b] <=> @artists[a]
+      keys_sorted = Artists.artists.keys.sort do |a, b|
+        unless Artists.artists[a] == Artists.artists[b]
+          Artists.artists[b] <=> Artists.artists[a]
         else
           a.artist.upcase <=> b.artist.upcase
         end
       end
-      keys_sorted.map { |key| [key, @artists[key]] }
+      keys_sorted.map { |key| [key, Artists.artists[key]] }
     end
 
     def artists_count
-      @artists.length
-    end
-
-    def build
-      Songs.songs.each_pair { |key, count| @artists[Artist.new key.artist] += count }
-      nil
+      Artists.artists.length
     end
 
     def songs_alphabetized_by_artist
@@ -85,8 +91,7 @@ module ReportSystem
       Window.define FIRST, LAST
       Records.transcribe
       Songs.build
-      Songs.filter
-      Database.build
+      Artists.build
       Report.print_summary
       Report.print_popularity
       Report.print_alphabetical
@@ -179,19 +184,11 @@ module ReportSystem
 
     Song = ::Data.define :artist, :title
 
-    @songs_raw = ::Hash.new 0
+    @raw = ::Hash.new 0
 
     def build
       Records.records.each { |e| add(e.artist, e.title, e.toggle) }
-    end
-
-    def filter
-      @songs = @songs_raw.reject do |key, value|
-        all_empty = key.artist.empty? && key.title.empty?
-# An Unlike in our window may be paired with a Like prior to it.
-        all_empty || value <= 0
-      end
-      nil
+      filter
     end
 
     private
@@ -199,7 +196,16 @@ module ReportSystem
     def add(artist, title, toggle)
       addend = :l == toggle ? 1 : -1
       key = Song.new artist, title
-      @songs_raw[key] += addend
+      @raw[key] += addend
+      nil
+    end
+
+    def filter
+      @songs = @raw.reject do |key, count|
+        all_empty = key.artist.empty? && key.title.empty?
+# An Unlike in our window may be paired with a Like prior to it.
+        all_empty || count <= 0
+      end
       nil
     end
   end
