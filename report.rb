@@ -4,7 +4,7 @@ require 'date'
 require 'open-uri'
 
 module ReportSystem
-  module Likes
+  module SongDatabase
     extend self
 
     Artist = ::Data.define :artist
@@ -103,8 +103,8 @@ module ReportSystem
       $stdout = File.open FILENAME_OUT, 'w'
       puts "Range of dates: #{FIRST} through #{LAST} (inclusive)."
       Window.define FIRST, LAST
-      SongDatabase.build
-      Likes.process
+      Records.build
+      SongDatabase.process
       Report.print_summary
       Report.print_popularity
       Report.print_alphabetical
@@ -119,34 +119,34 @@ module ReportSystem
 
     def print_alphabetical
       OUT_SECOND.puts "Songs (alphabetical by artist):\n\n"
-      a = Likes.songs_alphabetized_by_artist
+      a = SongDatabase.songs_alphabetized_by_artist
       OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
       OUT_SECOND.puts "\nArtists (alphabetical):\n\n"
-      a = Likes.artists_alphabetized
+      a = SongDatabase.artists_alphabetized
       OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil
     end
 
     def print_popularity
       puts "\nSong popularity:\n\n"
-      a = Likes.songs_by_popularity
+      a = SongDatabase.songs_by_popularity
       puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
       puts "\nArtist popularity:\n\n"
-      a = Likes.artists_by_popularity
+      a = SongDatabase.artists_by_popularity
       puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil
     end
 
     def print_summary
-      puts "#{Likes.artists_count} artists and"
-      puts "#{Likes.songs_count} songs."
+      puts "#{SongDatabase.artists_count} artists and"
+      puts "#{SongDatabase.songs_count} songs."
       nil
     end
   end
 
-  module SongDatabase
+  module Records
     extend self
 
     Record = ::Data.define :time, :ip, :toggle, :artist, :title
@@ -185,7 +185,7 @@ module ReportSystem
       puts "#{LINES.length} total customer interactions read. Within the selected range of dates:"
       puts "#{lines_count_within} interactions found, comprising"
 # The Report module prints next.
-      @records.each { |e| Likes.add(e.artist, e.title, e.toggle) }
+      @records.each { |e| SongDatabase.add(e.artist, e.title, e.toggle) }
       nil
     end
   end
