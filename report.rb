@@ -103,22 +103,22 @@ module ReportSystem
       puts "#{Likes.artists_count} artists and"
       puts "#{Likes.songs_count} songs."
 
-      puts "\nSong popularity:\n"
+      puts "\nSong popularity:\n\n"
       a = Likes.songs_by_popularity
       puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
-      puts "\nArtist popularity:\n"
+      puts "\nArtist popularity:\n\n"
       a = Likes.artists_by_popularity
       puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil
     end
 
     def process_alphabetical
-      MyFile.out_second.puts "Songs (alphabetical by artist):\n"
+      MyFile.out_second.puts "Songs (alphabetical by artist):\n\n"
       a = Likes.songs_alphabetized_by_artist
       MyFile.out_second.puts a.map { |key, count| "#{count} : #{key.title} : #{key.artist}" }
 
-      MyFile.out_second.puts "\nArtists (alphabetical):\n"
+      MyFile.out_second.puts "\nArtists (alphabetical):\n\n"
       a = Likes.artists_alphabetized
       MyFile.out_second.puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil
