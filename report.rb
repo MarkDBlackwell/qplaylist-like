@@ -91,6 +91,8 @@ module ReportSystem
 
     def run
       $stdout = ::File.open FILENAME_OUT, 'w'
+      s = ::Time.now.strftime '%Y-%b-%d %H:%M:%S'
+      puts "WTMD Song Likes Report, run #{s}."
       puts "Range of dates: #{FIRST} through #{LAST} (inclusive)."
       Window.define FIRST, LAST
       Records.transcribe
