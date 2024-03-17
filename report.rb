@@ -42,6 +42,10 @@ module ReportSystem
       keys_sorted.map { |key| [key, artists[key]] }
     end
 
+    def likes_count
+      @likes_count ||= Records.records.select { |e| :l == e.toggle }.length
+    end
+
     def songs_alphabetized_by_artist
       songs = Songs.songs
       keys_sorted = songs.keys.sort do |a, b|
@@ -60,6 +64,10 @@ module ReportSystem
         end
       end
       keys_sorted.map { |key| [key, songs[key]] }
+    end
+
+    def unlikes_count
+      @unlikes_count ||= Records.records.select { |e| :u == e.toggle }.length
     end
   end
 
@@ -90,7 +98,7 @@ module ReportSystem
       Records.transcribe
       Songs.build
       Artists.build
-      Report.print
+      Report.print_report
       nil
     end
   end
@@ -100,8 +108,8 @@ module ReportSystem
 
     attr_reader :records
 
-# The matched fields are: Time, IP, Toggle, Artist, and Title.
-#                              Time       IP         Toggle       Artist          Title
+# The matched fields are: time, ip, toggle, artist, and title.
+#                              time       ip         toggle       artist          title
     REGEXP = ::Regexp.new(/^ *+([^ ]++) ++([^ ]++) ++([lu]) ++" *+(.*?) *+" ++" *+(.*?) *+" *+$/n)
 
     TIME_INDEX = 1
@@ -144,7 +152,7 @@ module ReportSystem
 
     OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
 
-    def print
+    def print_report
       print_summary
       print_popularity
       print_alphabetical
@@ -176,6 +184,8 @@ module ReportSystem
     end
 
     def print_summary
+      print "#{Database.likes_count} Likes and "
+      puts "#{Database.unlikes_count} Unlikes."
       puts "#{Artists.artists.length} artists and"
       puts "#{Songs.songs.length} songs."
       nil
