@@ -71,6 +71,21 @@ module ReportSystem
     end
   end
 
+  module Ips
+    extend self
+
+    attr_reader :ips
+
+    Ip = ::Data.define :ip
+
+    @ips = ::Hash.new 0
+
+    def build
+      Records.records.each { |e| @ips[Ip.new e.ip] += 1 }
+      nil
+    end
+  end
+
   module Main
     extend self
 
@@ -98,6 +113,7 @@ module ReportSystem
       Records.transcribe
       Songs.build
       Artists.build
+      Ips.build
       Report.print_report
       nil
     end
@@ -185,7 +201,8 @@ module ReportSystem
 
     def print_summary
       print "#{Database.likes_count} Likes and "
-      puts "#{Database.unlikes_count} Unlikes."
+      print "#{Database.unlikes_count} Unlikes from "
+      puts "#{Ips.ips.length} IPs."
       puts "#{Artists.artists.length} artists and"
       puts "#{Songs.songs.length} songs."
       nil
@@ -211,8 +228,7 @@ module ReportSystem
 
     def add(artist, title, toggle)
       addend = :l == toggle ? 1 : -1
-      key = Song.new artist, title
-      @raw[key] += addend
+      @raw[Song.new artist, title] += addend
       nil
     end
 
