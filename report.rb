@@ -42,10 +42,6 @@ module ReportSystem
       keys_sorted.map { |key| [key, artists[key]] }
     end
 
-    def artists_count
-      Artists.artists.length
-    end
-
     def songs_alphabetized_by_artist
       songs = Songs.songs
       keys_sorted = songs.keys.sort do |a, b|
@@ -64,10 +60,6 @@ module ReportSystem
         end
       end
       keys_sorted.map { |key| [key, songs[key]] }
-    end
-
-    def songs_count
-      Songs.songs.length
     end
   end
 
@@ -184,8 +176,8 @@ module ReportSystem
     end
 
     def print_summary
-      puts "#{Database.artists_count} artists and"
-      puts "#{Database.songs_count} songs."
+      puts "#{Artists.artists.length} artists and"
+      puts "#{Songs.songs.length} songs."
       nil
     end
   end
