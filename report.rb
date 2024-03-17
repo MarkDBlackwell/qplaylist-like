@@ -3,6 +3,9 @@
 require 'date'
 require 'open-uri'
 
+# TODO: Report the geographic regions of the liking IPs.
+# TODO: Register with ip-api.com?
+
 module ReportSystem
   module Artists
     extend self
@@ -86,6 +89,30 @@ module ReportSystem
     end
   end
 
+  module Locations
+    extend self
+
+    attr_reader :locations
+
+    Location = ::Data.define :city, :continent, :country, :isp, :region_name
+
+    @locations = ::Hash.new 0
+
+    def build
+      Ips.ips.each_pair { |key, count| @locations[Location.new *(fields key.ip)] += count }
+      nil
+    end
+
+    private
+
+    def fields(ip)
+# TODO: Use API.
+# http://ip-api.com/json/24.48.0.1?fields=status,message,city,continent,country,regionName
+
+      ['Ashburn', 'North America', 'United States', 'AT&T Corp.', 'Virginia']
+    end
+  end
+
   module Main
     extend self
 
@@ -114,6 +141,7 @@ module ReportSystem
       Songs.build
       Artists.build
       Ips.build
+      Locations.build
       Report.print_report
       nil
     end
@@ -167,11 +195,13 @@ module ReportSystem
     extend self
 
     OUT_SECOND = ::File.open 'var/song-likes-report-second.txt', 'w'
+    OUT_THIRD = ::File.open 'var/song-likes-report-third.txt', 'w'
 
     def print_report
       print_summary
       print_popularity
       print_alphabetical
+      print_locations
       nil
     end
 
@@ -186,6 +216,15 @@ module ReportSystem
       a = Database.artists_alphabetized
       OUT_SECOND.puts a.map { |key, count| "#{count} : #{key.artist}" }
       nil
+    end
+
+    def print_locations
+      OUT_THIRD.puts "Locations:\n\n"
+      lines = Locations.locations.map do |key, count|
+        fields = [key.city, key.region_name, key.country, key.continent]
+        "#{count} : #{fields.join ', '}. (#{key.isp})"
+      end
+      OUT_THIRD.puts lines
     end
 
     def print_popularity
