@@ -3,9 +3,6 @@
 require 'date'
 require 'open-uri'
 
-# TODO: Report the geographic regions of the liking IPs.
-# TODO: Register with ip-api.com?
-
 module ReportSystem
   module Artists
     extend self
@@ -219,6 +216,13 @@ module ReportSystem
     end
 
     def print_locations
+# TODO: Report the geographic regions of the liking IPs.
+# TODO: Register with ip-api.com?
+
+# Temporarily, for development, report the IPs:
+      OUT_THIRD.puts "(IPs:)\n\n"
+      OUT_THIRD.puts Ips.ips.map { |key, count| "(#{count} : #{key.ip})" }
+
       OUT_THIRD.puts "Locations:\n\n"
       lines = Locations.locations.map do |key, count|
         fields = [key.city, key.region_name, key.country, key.continent]
