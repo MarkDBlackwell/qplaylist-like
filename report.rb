@@ -1,6 +1,8 @@
 # Copyright (C) 2024 Mark D. Blackwell. All rights reserved. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 require 'date'
+require 'json'
+require 'net/http'
 require 'open-uri'
 
 module ReportSystem
@@ -89,6 +91,10 @@ module ReportSystem
   module Locations
     extend self
 
+    BATCH_LENGTH_MAX = 100
+    ENDPOINT = ::URI::HTTP.build host: 'ip-api.com', path: '/batch', query: 'fields=city,continent,country,isp,message,query,regionName,status'
+    HEADERS = {Accept: 'application/json', Connection: 'Keep-Alive', 'Content-Type': 'application/json'}
+
     attr_reader :locations
 
     Location = ::Data.define :city, :continent, :country, :isp, :region_name
@@ -96,17 +102,39 @@ module ReportSystem
     @locations = ::Hash.new 0
 
     def build
-      Ips.ips.each_pair { |key, count| @locations[Location.new *(fields key.ip)] += count }
+# Is it possible to post to a URI which includes a query within an HTTP session? I couldn't find a way:
+##     ::Net::HTTP.start(hostname) do |http|
+
+      requests_remaining = 15
+      seconds_till_next_window = 60
+
+      sorted = Ips.ips.to_a.sort { |a, b| a.first.ip <=> b.first.ip }
+      sorted.each_slice BATCH_LENGTH_MAX do |batch|
+        delay = requests_remaining.positive? ? 0 : seconds_till_next_window.succ
+        ::Kernel.sleep delay
+        ips = batch.map(&:first).map &:ip
+        data = ::JSON.generate ips
+        response = ::Net::HTTP.post ENDPOINT, data, HEADERS
+        $stderr.puts "#{response.inspect}" unless ::Net::HTTPOK == response.class
+        begin
+          parsed = ::JSON.parse response.body
+          parsed.each_with_index do |ip_data, index|
+            status = ip_data['status']
+            unless 'success' == status
+              $stderr.puts "status: #{status}, message: #{ip_data['message']}, query: #{ip_data['query']}"
+              next
+            end
+            fields = ['Ashburn', 'North America', 'United States', 'AT&T Corp.', 'Virginia']
+            fields = %w[city continent country isp regionName].map { |e| ip_data[e].to_sym }
+            count = batch.at(index).last
+            @locations[Location.new(*fields)] += batch.at(index).last
+          end
+          requests_remaining, seconds_till_next_window = %w[rl ttl].map { |e| "x-#{e}" }.map { |k| response.to_hash[k].first.to_i }
+         rescue
+           $stderr.puts "Rescued #{response.inspect}"
+        end
+      end
       nil
-    end
-
-    private
-
-    def fields(ip)
-# TODO: Use API.
-# http://ip-api.com/json/24.48.0.1?fields=status,message,city,continent,country,regionName
-
-      ['Ashburn', 'North America', 'United States', 'AT&T Corp.', 'Virginia']
     end
   end
 
@@ -216,9 +244,6 @@ module ReportSystem
     end
 
     def print_locations
-# TODO: Report the geographic regions of the liking IPs.
-# TODO: Register with ip-api.com?
-
 # Temporarily, for development, report the IPs:
       OUT_THIRD.puts "(IPs:)\n\n"
       OUT_THIRD.puts Ips.ips.map { |key, count| "(#{count} : #{key.ip})" }
