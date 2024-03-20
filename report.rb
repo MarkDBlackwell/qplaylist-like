@@ -44,8 +44,37 @@ module ReportSystem
       keys_sorted.map { |key| [key, artists[key]] }
     end
 
+    def ips_by_frequency
+      @ips_by_frequency ||= begin
+        ips = Ips.ips
+        keys_sorted = ips.keys.sort do |a, b|
+          unless ips[a] == ips[b]
+            ips[b] <=> ips[a]
+          else
+            a.ip <=> b.ip
+          end
+        end
+        keys_sorted.map { |key| [key, ips[key]] }
+      end
+    end
+
     def likes_count
       @likes_count ||= Records.records.select { |e| :l == e.toggle }.length
+    end
+
+    def locations_by_frequency
+      @locations_by_frequency ||= begin
+        locations = Locations.locations
+        keys_sorted = locations.keys.sort do |a, b|
+          unless locations[a] == locations[b]
+            locations[b] <=> locations[a]
+          else
+            [    a.city, a.region_name, a.country, a.continent, a.isp] <=>
+                [b.city, b.region_name, b.country, b.continent, b.isp]
+          end
+        end
+        keys_sorted.map { |key| [key, locations[key]] }
+      end
     end
 
     def songs_alphabetized_by_artist
@@ -117,21 +146,18 @@ module ReportSystem
         response = ::Net::HTTP.post ENDPOINT, data, HEADERS
         $stderr.puts "#{response.inspect}" unless ::Net::HTTPOK == response.class
         begin
-          parsed = ::JSON.parse response.body
-          parsed.each_with_index do |ip_data, index|
+          ::JSON.parse(response.body).each_with_index do |ip_data, index|
             status = ip_data['status']
             unless 'success' == status
               $stderr.puts "status: #{status}, message: #{ip_data['message']}, query: #{ip_data['query']}"
               next
             end
-            fields = ['Ashburn', 'North America', 'United States', 'AT&T Corp.', 'Virginia']
             fields = %w[city continent country isp regionName].map { |e| ip_data[e].to_sym }
-            count = batch.at(index).last
             @locations[Location.new(*fields)] += batch.at(index).last
           end
           requests_remaining, seconds_till_next_window = %w[rl ttl].map { |e| "x-#{e}" }.map { |k| response.to_hash[k].first.to_i }
-         rescue
-           $stderr.puts "Rescued #{response.inspect}"
+        rescue
+          $stderr.puts "Rescued #{response.inspect}"
         end
       end
       nil
@@ -159,7 +185,7 @@ module ReportSystem
     def run
       $stdout = ::File.open FILENAME_OUT, 'w'
       s = ::Time.now.strftime '%Y-%b-%d %H:%M:%S'
-      puts "WTMD Song Likes Report, run #{s}."
+      print "WTMD Song Likes Report, run #{s}.\n\n"
       puts "Range of dates: #{FIRST} through #{LAST} (inclusive)."
       Window.define FIRST, LAST
       Records.transcribe
@@ -209,7 +235,7 @@ module ReportSystem
       end
       message = "Warning: #{lines_count_bad} interaction records were bad.\n"
       $stderr.puts message if lines_count_bad > 0
-      puts "#{LINES.length} total customer interactions read. Within the selected range of dates:"
+      puts "#{LINES.length} total customer interactions read; and within the selected range of dates:"
       puts "#{lines_count_within} interactions found, comprising"
 # The Report module prints next.
       nil
@@ -245,13 +271,17 @@ module ReportSystem
 
     def print_locations
 # Temporarily, for development, report the IPs:
-      OUT_THIRD.puts "(IPs:)\n\n"
-      OUT_THIRD.puts Ips.ips.map { |key, count| "(#{count} : #{key.ip})" }
+      OUT_THIRD.puts "( IPs by frequency ):\n\n"
+      a = Database.ips_by_frequency
+      OUT_THIRD.puts a.map { |key, count| "( #{count} : #{key.ip} )" }
+      OUT_THIRD.puts ""
 
-      OUT_THIRD.puts "Locations:\n\n"
-      lines = Locations.locations.map do |key, count|
-        fields = [key.city, key.region_name, key.country, key.continent]
-        "#{count} : #{fields.join ', '}. (#{key.isp})"
+# Report the locations:
+      OUT_THIRD.puts "Locations (by frequency):\n\n"
+      a = Database.locations_by_frequency
+      lines = a.map do |k, count|
+        fields = [k.city, k.region_name, k.country, k.continent]
+        "#{count} : #{fields.join ', '} – (#{k.isp})"
       end
       OUT_THIRD.puts lines
     end
@@ -268,9 +298,10 @@ module ReportSystem
     end
 
     def print_summary
-      print "#{Database.likes_count} Likes and "
-      print "#{Database.unlikes_count} Unlikes from "
-      puts "#{Ips.ips.length} IPs."
+      print "#{Database.likes_count} likes and "
+      puts "#{Database.unlikes_count} unlikes from"
+      print "#{Locations.locations.length} locations "
+      puts "(#{Ips.ips.length} IPs),"
       puts "#{Artists.artists.length} artists and"
       puts "#{Songs.songs.length} songs."
       nil
