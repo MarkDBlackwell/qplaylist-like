@@ -25,27 +25,41 @@ module ReportSystem
     extend self
 
     def artists_alphabetized
-      artists = Artists.artists
-      keys_sorted = artists.keys.sort do |a, b|
-        [a.artist.upcase, artists[a]] <=> [b.artist.upcase, artists[b]]
+       @artists_alphabetized ||= begin
+        artists = Artists.artists
+        keys_sorted = artists.keys.sort do |a, b|
+          [a.artist.upcase, artists[a]] <=> [b.artist.upcase, artists[b]]
+        end
+        keys_sorted.map { |key| [key, artists[key]] }
       end
-      keys_sorted.map { |key| [key, artists[key]] }
     end
 
     def artists_by_popularity
-      artists = Artists.artists
-      keys_sorted = artists.keys.sort do |a, b|
-        unless artists[a] == artists[b]
-          artists[b] <=> artists[a]
-        else
-          a.artist.upcase <=> b.artist.upcase
+       @artists_by_popularity ||= begin
+        artists = Artists.artists
+        keys_sorted = artists.keys.sort do |a, b|
+          unless artists[a] == artists[b]
+            artists[b] <=> artists[a]
+          else
+            a.artist.upcase <=> b.artist.upcase
+          end
         end
+        keys_sorted.map { |key| [key, artists[key]] }
       end
-      keys_sorted.map { |key| [key, artists[key]] }
+    end
+
+    def ips_alphabetized
+       @ips_alphabetized ||= begin
+        ips = Ips.ips
+        keys_sorted = ips.keys.sort do |a, b|
+          [a.ip, ips[a]] <=> [b.ip, ips[b]]
+        end
+        keys_sorted.map { |key| [key, ips[key]] }
+      end
     end
 
     def ips_by_frequency
-      @ips_by_frequency ||= begin
+       @ips_by_frequency ||= begin
         ips = Ips.ips
         keys_sorted = ips.keys.sort do |a, b|
           unless ips[a] == ips[b]
@@ -59,11 +73,11 @@ module ReportSystem
     end
 
     def likes_count
-      @likes_count ||= Records.records.select { |e| :l == e.toggle }.length
+       @likes_count ||= Records.records.select { |e| :l == e.toggle }.length
     end
 
     def locations_by_frequency
-      @locations_by_frequency ||= begin
+       @locations_by_frequency ||= begin
         locations = Locations.locations
         keys_sorted = locations.keys.sort do |a, b|
           unless locations[a] == locations[b]
@@ -78,27 +92,33 @@ module ReportSystem
     end
 
     def songs_alphabetized_by_artist
-      songs = Songs.songs
-      keys_sorted = songs.keys.sort do |a, b|
-        [a.artist.upcase, a.title.upcase, songs[a]] <=> [b.artist.upcase, b.title.upcase, songs[b]]
+       @songs_alphabetized_by_artist ||= begin
+        songs = Songs.songs
+        keys_sorted = songs.keys.sort do |a, b|
+          [    a.artist.upcase, a.title.upcase, songs[a]] <=>
+              [b.artist.upcase, b.title.upcase, songs[b]]
+        end
+        keys_sorted.map { |key| [key, songs[key]] }
       end
-      keys_sorted.map { |key| [key, songs[key]] }
     end
 
     def songs_by_popularity
-      songs = Songs.songs
-      keys_sorted = songs.keys.sort do |a, b|
-        unless songs[a] == songs[b]
-          songs[b] <=> songs[a]
-        else
-          [a.artist.upcase, a.title.upcase] <=> [b.artist.upcase, b.title.upcase]
+       @songs_by_popularity ||= begin
+        songs = Songs.songs
+        keys_sorted = songs.keys.sort do |a, b|
+          unless songs[a] == songs[b]
+            songs[b] <=> songs[a]
+          else
+            [    a.artist.upcase, a.title.upcase] <=>
+                [b.artist.upcase, b.title.upcase]
+          end
         end
+        keys_sorted.map { |key| [key, songs[key]] }
       end
-      keys_sorted.map { |key| [key, songs[key]] }
     end
 
     def unlikes_count
-      @unlikes_count ||= Records.records.select { |e| :u == e.toggle }.length
+       @unlikes_count ||= Records.records.select { |e| :u == e.toggle }.length
     end
   end
 
@@ -112,7 +132,10 @@ module ReportSystem
     @ips = ::Hash.new 0
 
     def build
-      Records.records.each { |e| @ips[Ip.new e.ip] += 1 }
+      Records.records.each do |record|
+        key = Ip.new record.ip.downcase
+        @ips[key] += 1
+      end
       nil
     end
   end
@@ -131,36 +154,56 @@ module ReportSystem
     @locations = ::Hash.new 0
 
     def build
-# Is it possible to post to a URI which includes a query within an HTTP session? I couldn't find a way:
-##     ::Net::HTTP.start(hostname) do |http|
-
-      requests_remaining = 15
-      seconds_till_next_window = 60
-
-      sorted = Ips.ips.to_a.sort { |a, b| a.first.ip <=> b.first.ip }
-      sorted.each_slice BATCH_LENGTH_MAX do |batch|
-        delay = requests_remaining.positive? ? 0 : seconds_till_next_window.succ
-        ::Kernel.sleep delay
-        ips = batch.map(&:first).map &:ip
-        data = ::JSON.generate ips
-        response = ::Net::HTTP.post ENDPOINT, data, HEADERS
-        $stderr.puts "#{response.inspect}" unless ::Net::HTTPOK == response.class
+      requests_remaining, seconds_till_next_window = [15, 60]
+      a = Database.ips_alphabetized
+      a.each_slice BATCH_LENGTH_MAX do |batch|
+        keys, counts = batch.transpose
+        delay requests_remaining, seconds_till_next_window
         begin
-          ::JSON.parse(response.body).each_with_index do |ip_data, index|
-            status = ip_data['status']
-            unless 'success' == status
-              $stderr.puts "status: #{status}, message: #{ip_data['message']}, query: #{ip_data['query']}"
-              next
-            end
-            fields = %w[city continent country isp regionName].map { |e| ip_data[e].to_sym }
-            @locations[Location.new(*fields)] += batch.at(index).last
-          end
-          requests_remaining, seconds_till_next_window = %w[rl ttl].map { |e| "x-#{e}" }.map { |k| response.to_hash[k].first.to_i }
+          response = service_fetch keys, counts
+          add response, counts
+          requests_remaining, seconds_till_next_window = timings response
         rescue
           $stderr.puts "Rescued #{response.inspect}"
         end
       end
       nil
+    end
+
+    private
+
+    def add(response, counts)
+      ::JSON.parse(response.body).each_with_index do |ip_data, index|
+        status = ip_data['status']
+#       $stderr.puts "#{ip_data.inspect}"
+        unless 'success' == status
+          $stderr.puts "status: #{status}, message: #{ip_data['message']}, query: #{ip_data['query']}"
+          next
+        end
+        fields = %w[city continent country isp regionName].map { |e| ip_data[e].to_sym }
+        @locations[Location.new(*fields)] += counts.at index
+      end
+      nil
+    end
+
+    def delay(requests_remaining, seconds_till_next_window)
+      seconds = requests_remaining.positive? ? 0 : seconds_till_next_window.succ
+      ::Kernel.sleep seconds
+      nil
+    end
+
+    def service_fetch(keys, counts)
+      ips = keys.map &:ip
+      data = ::JSON.generate ips
+# Within an HTTP session, is it possible to post to a URI which includes a query? I couldn't discover how.
+## ::Net::HTTP.start(hostname) do |http|
+      result = ::Net::HTTP.post ENDPOINT, data, HEADERS
+      $stderr.puts "#{result.inspect}" unless ::Net::HTTPOK == result.class
+      result
+    end
+
+    def timings(response)
+      %w[rl ttl].map { |e| "x-#{e}" }.map { |k| response.to_hash[k].first.to_i }
     end
   end
 
@@ -320,6 +363,7 @@ module ReportSystem
     def build
       Records.records.each { |e| add(e.artist, e.title, e.toggle) }
       @songs = filter
+      @raw = nil
       nil
     end
 
