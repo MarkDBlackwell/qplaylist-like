@@ -14,7 +14,11 @@ module ReportSystem
        @artists_alphabetized ||= begin
         artists = Artists.artists
         keys_sorted = artists.keys.sort do |a, b|
-          [a.artist.upcase, artists[a]] <=> [b.artist.upcase, artists[b]]
+          unless a.artist.upcase == b.artist.upcase
+            a.artist.upcase <=> b.artist.upcase
+          else
+            artists[b] <=> artists[a]
+          end
         end
         keys_sorted.map { |key| [key, artists[key]] }
       end
@@ -24,7 +28,7 @@ module ReportSystem
        @artists_by_popularity ||= begin
         artists = Artists.artists
         keys_sorted = artists.keys.sort do |a, b|
-          unless artists[a] == artists[b]
+          unless artists[b] == artists[a]
             artists[b] <=> artists[a]
           else
             a.artist.upcase <=> b.artist.upcase
@@ -38,7 +42,8 @@ module ReportSystem
        @ips_alphabetized ||= begin
         ips = Ips.ips
         keys_sorted = ips.keys.sort do |a, b|
-          [a.ip, ips[a]] <=> [b.ip, ips[b]]
+# Ips can't possibly be the same; they are already downcased.
+          a.ip <=> b.ip
         end
         keys_sorted.map { |key| [key, ips[key]] }
       end
@@ -48,9 +53,10 @@ module ReportSystem
        @ips_by_frequency ||= begin
         ips = Ips.ips
         keys_sorted = ips.keys.sort do |a, b|
-          unless ips[a] == ips[b]
+          unless ips[b] == ips[a]
             ips[b] <=> ips[a]
           else
+# Ips are already downcased.
             a.ip <=> b.ip
           end
         end
@@ -66,7 +72,7 @@ module ReportSystem
        @locations_by_frequency ||= begin
         locations = Locations.locations
         keys_sorted = locations.keys.sort do |a, b|
-          unless locations[a] == locations[b]
+          unless locations[b] == locations[a]
             locations[b] <=> locations[a]
           else
             [    a.city, a.region_name, a.country, a.continent, a.isp] <=>
@@ -81,8 +87,11 @@ module ReportSystem
        @songs_alphabetized_by_artist ||= begin
         songs = Songs.songs
         keys_sorted = songs.keys.sort do |a, b|
-          [    a.artist.upcase, a.title.upcase, songs[a]] <=>
-              [b.artist.upcase, b.title.upcase, songs[b]]
+          unless [a.artist.upcase, a.title.upcase] ==  [b.artist.upcase, b.title.upcase]
+            [     a.artist.upcase, a.title.upcase] <=> [b.artist.upcase, b.title.upcase]
+          else
+            songs[b] <=> songs[a]
+          end
         end
         keys_sorted.map { |key| [key, songs[key]] }
       end
@@ -92,7 +101,7 @@ module ReportSystem
        @songs_by_popularity ||= begin
         songs = Songs.songs
         keys_sorted = songs.keys.sort do |a, b|
-          unless songs[a] == songs[b]
+          unless songs[b] == songs[a]
             songs[b] <=> songs[a]
           else
             [    a.artist.upcase, a.title.upcase] <=>
