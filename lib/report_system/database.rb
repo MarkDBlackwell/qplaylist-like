@@ -42,7 +42,8 @@ module ReportSystem
        @ips_alphabetized ||= begin
         ips = Ips.ips
         keys_sorted = ips.keys.sort do |a, b|
-# Ips can't possibly be the same; they are already downcased.
+# Ips can't possibly be the same.
+# Ips are already downcased.
           a.ip <=> b.ip
         end
         keys_sorted.map { |key| [key, ips[key]] }

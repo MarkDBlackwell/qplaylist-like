@@ -43,7 +43,7 @@ module ReportSystem
     def add(response, counts)
       ::JSON.parse(response.body).each_with_index do |ip_data, index|
         status = ip_data['status']
-#       $stderr.puts "#{ip_data.inspect}"
+# If the service rejects an IP, it still continues to process all the other IPs in the batch.
         unless 'success' == status
           $stderr.puts "status: #{status}, message: #{ip_data['message']}, query: #{ip_data['query']}"
           next

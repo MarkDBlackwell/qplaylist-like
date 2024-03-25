@@ -16,8 +16,17 @@ module ReportSystem
       Records.records.each do |record|
         key = Ip.new record.ip.downcase
         @ips[key] += 1
+#       test_ip_bad record.ip.downcase
       end
       nil
+    end
+
+    private
+
+    def test_ip_bad(good)
+      ip_bad = "1#{good}".to_sym
+      key_bad = Ip.new ip_bad
+      @ips[key_bad] += 1
     end
   end
 end
