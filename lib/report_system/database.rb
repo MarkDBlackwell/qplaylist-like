@@ -76,8 +76,8 @@ module ReportSystem
           unless locations[b] == locations[a]
             locations[b] <=> locations[a]
           else
-            [    a.city, a.region_name, a.country, a.continent, a.isp] <=>
-                [b.city, b.region_name, b.country, b.continent, b.isp]
+            [    a.continent, a.country, a.region_name, a.city, a.isp] <=>
+                [b.continent, b.country, b.region_name, b.city, b.isp]
           end
         end
         keys_sorted.map { |key| [key, locations[key]] }

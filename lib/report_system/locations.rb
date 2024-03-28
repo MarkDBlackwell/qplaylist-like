@@ -33,6 +33,7 @@ module ReportSystem
           requests_remaining, seconds_till_next_window = timings response
         rescue
           $stderr.puts "Rescued #{response.inspect}"
+          raise
         end
       end
       nil

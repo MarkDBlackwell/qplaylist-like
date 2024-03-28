@@ -33,6 +33,10 @@ module ReportSystem
 
     def run
       $stdout = ::File.open FILENAME_OUT, 'w'
+# %Y is year including century, zero-padded.
+# %b is abbreviated month name, capitalized.
+# %d is day of the month, in range (1..31), zero-padded.
+# %H:%M:%S is zero-padded hour (of 24), minute, second.
       s = ::Time.now.strftime '%Y-%b-%d %H:%M:%S'
       print "WTMD Song Likes Report, run #{s}.\n\n"
       puts "Range of dates: #{FIRST} through #{LAST} (inclusive)."

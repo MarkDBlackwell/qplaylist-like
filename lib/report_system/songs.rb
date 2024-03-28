@@ -13,18 +13,12 @@ module ReportSystem
     @raw = ::Hash.new 0
 
     def build
-      Records.records.each { |e| add(e.artist, e.title, e.toggle) }
+      Records.records.each { |e| song_add e.artist, e.title, e.toggle }
       @songs = filter
       @raw = nil
     end
 
     private
-
-    def add(artist, title, toggle)
-      addend = :l == toggle ? 1 : -1
-      @raw[Song.new artist, title] += addend
-      nil
-    end
 
     def filter
       @raw.reject do |key, count|
@@ -32,6 +26,12 @@ module ReportSystem
 # An Unlike in our window may be paired with a Like prior to it.
         all_empty || count <= 0
       end
+    end
+
+    def song_add(artist, title, toggle)
+      addend = :l == toggle ? 1 : -1
+      @raw[Song.new artist, title] += addend
+      nil
     end
   end
 end

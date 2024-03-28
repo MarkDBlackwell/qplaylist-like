@@ -8,7 +8,7 @@ module ReportSystem
 
     attr_reader :records
 
-# The matched fields are: time, ip, toggle, artist, and title.
+# The matched fields are:
 #                              time       ip         toggle       artist          title
     REGEXP = ::Regexp.new(/^ *+([^ ]++) ++([^ ]++) ++([lu]) ++" *+(.*?) *+" ++" *+(.*?) *+" *+$/n)
 
@@ -20,6 +20,8 @@ module ReportSystem
 
     Record = ::Data.define :time, :ip, :toggle, :artist, :title
 
+    RECORD_MEMBERS_LENGTH = Record.members.length
+
     @records = []
 
     def transcribe
@@ -27,13 +29,13 @@ module ReportSystem
       lines_count_bad = 0
 
       LINES.map do |line|
-        md = REGEXP.match line
-        unless md
+        match_data = REGEXP.match line
+        unless match_data
           lines_count_bad += 1
           next 
         end
-        fields = 5.times.map { |i| md[i.succ].to_sym }
-        if Window.within? md[TIME_INDEX]
+        fields = RECORD_MEMBERS_LENGTH.times.map { |i| match_data[i.succ].to_sym }
+        if Window.within? match_data[TIME_INDEX]
           lines_count_within += 1
           @records.push Record.new(*fields)
         end
