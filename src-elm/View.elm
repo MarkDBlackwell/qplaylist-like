@@ -54,6 +54,4 @@ view model =
     Html.Keyed.node
         "main"
         []
-        (model.songsCurrent
-            |> List.indexedMap keyedSong
-        )
+        (List.indexedMap keyedSong model.songsCurrent)

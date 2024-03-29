@@ -4,6 +4,11 @@ import Json.Decode as D
 import Model as M
 
 
+
+--Inspired by this JSON decoder generator:
+--https://noredink.github.io/json-to-elm/
+
+
 appendJsonDecoder : D.Decoder M.AppendResponseString
 appendJsonDecoder =
     D.map (.response << M.AppendJsonRoot)
