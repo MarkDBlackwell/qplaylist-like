@@ -42,6 +42,10 @@ import Tuple
   If you forget to add a module declaration, Elm will use this one instead:
 module Main exposing (..)
 
+"Let...in" means: "Let these values be defined in this specific expression." Per:
+
+https://elm-lang.org/docs/syntax#let-expressions
+
   See:
 https://betterprogramming.pub/elm-a-beautiful-language-for-web-development-bc06fd0b570f?gi=2418dd03a463
 https://dev.to/jjant/a-guide-to-native-code-and-effect-managers-in-elm-part-1-commands-1k6n
