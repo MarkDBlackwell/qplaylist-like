@@ -23,7 +23,7 @@ https://guide.elm-lang.org/types/reading_types
   The constrained type variables are:
 number, appendable, comparable and compappend.
 
-  For next, see:
+  Per:
 https://package.elm-lang.org/packages/elm/core/latest/
 
   These are imported by default:
@@ -46,55 +46,56 @@ module Main exposing (..)
 https://betterprogramming.pub/elm-a-beautiful-language-for-web-development-bc06fd0b570f?gi=2418dd03a463
 https://dev.to/jjant/a-guide-to-native-code-and-effect-managers-in-elm-part-1-commands-1k6n
 https://discourse.elm-lang.org/t/escaping-from-npm/7597
+https://discourse.elm-lang.org/t/escaping-from-npm/7597/18
 https://discourse.elm-lang.org/t/when-is-subscriptions-called/1524/3
+https://ellie-app.com/hk5Mr29zxhza1
+https://ellie-app.com/new
 https://elm-lang.org/docs/syntax
+https://elm-lang.org/docs/syntax#let-expressions
 https://elm-lang.org/examples/clock
 https://elm-radio.com/episode/json-decoders/
+https://elm-tooling.github.io/elm-tooling-cli/
 https://elmprogramming.com/
 https://elmprogramming.com/decoding-json-part-1.html
 https://elmprogramming.com/decoding-json-part-2.html
-https://github.com/izdi/elm-cheat-sheet
-https://harfangk.github.io/2018/01/27/elm-function-operators.html
-https://kindsonthegenius.com/elm/elm-working-with-button-and-textboxes/
-https://korban.net/elm/json2elm/
-https://package.elm-lang.org/packages/elm/core/latest/Platform
-https://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd
-https://package.elm-lang.org/packages/elm/core/latest/Platform-Sub
-https://package.elm-lang.org/packages/mpizenberg/elm-pointer-events/latest/
-https://package.elm-lang.org/packages/the-sett/elm-pointer/latest/
-https://stackoverflow.com/questions/38732946/does-elm-have-a-debugging-function-that-can-print-an-object-to-the-console/54260966#54260966
-https://thoughtbot.com/blog/decoding-json-structures-with-elm
-https://www.toptal.com/front-end/getting-started-elm-language
-https://faq.elm-community.org/
-
-
-https://korban.net/elm/book/
-https://harfangk.github.io/2018/12/18/elm-managing-ports.html
-https://github.com/MattCheely/elm-port-examples
-https://package.elm-lang.org/packages/elm/http/latest/Http#expectStringResponse
-https://jzxhuang.medium.com/going-beyond-200-ok-a-guide-to-detailed-http-responses-in-elm-6ddd02322e
-https://stackoverflow.com/questions/54379403/elm-0-19-how-to-obtain-request-body-when-receiving-badstatus-with-elm-http-2-0
-https://thoughtbot.com/blog/bridging-elm-and-javascript-with-ports
 https://elmprogramming.com/protecting-boundaries.html
 https://elmprogramming.com/sending-data-to-javascript.html
-https://medium.com/elm-shorts/intro-to-records-in-elm-51bc5e933a57
-
-Ref. from Setup.js:
-https://discourse.elm-lang.org/t/escaping-from-npm/7597/18
-https://ellie-app.com/hk5Mr29zxhza1
-https://ellie-app.com/new
-https://elm-tooling.github.io/elm-tooling-cli/
+https://faq.elm-community.org/
 https://flaviocopes.com/javascript-async-defer/
 https://flaviocopes.com/javascript-async-defer/#blocking-rendering
 https://gist.github.com/dbj/7a1201072d098358dea3d4c3ea13c3d9
+https://github.com/izdi/elm-cheat-sheet
+https://github.com/klazuka/intellij-elm/blob/master/docs/features/generate-function-json.md
+https://github.com/MattCheely/elm-port-examples
+https://github.com/sporto/awesome-elm
 https://github.com/swc-project/swc
 https://guide.elm-lang.org/optimization/lazy
+https://harfangk.github.io/2018/01/27/elm-function-operators.html
+https://harfangk.github.io/2018/12/18/elm-managing-ports.html
 https://janiczek-ellies.builtwithdark.com/
+https://jzxhuang.medium.com/going-beyond-200-ok-a-guide-to-detailed-http-responses-in-elm-6ddd02322e
+https://kindsonthegenius.com/elm/elm-working-with-button-and-textboxes/
+https://korban.net/elm/book/
+https://korban.net/elm/json2elm/
+https://korban.net/posts/elm/2021-05-10-generating-json-decoders-with-json-decoders/
 https://learnyouahaskell.com/for-a-few-monads-more#state
+https://medium.com/elm-shorts/intro-to-records-in-elm-51bc5e933a57
+https://noredink.github.io/json-to-elm/
 https://package.elm-lang.org/packages/elm/browser/latest/Browser#application
 https://package.elm-lang.org/packages/elm/browser/latest/Browser#element
+https://package.elm-lang.org/packages/elm/core/latest/Platform
+https://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd
+https://package.elm-lang.org/packages/elm/core/latest/Platform-Sub
 https://package.elm-lang.org/packages/folkertdev/elm-state/latest/State
+https://package.elm-lang.org/packages/elm/http/latest/Http#expectStringResponse
+https://package.elm-lang.org/packages/mpizenberg/elm-pointer-events/latest/
 https://package.elm-lang.org/packages/sli/loadingstate/latest/LoadingState
+https://package.elm-lang.org/packages/the-sett/elm-pointer/latest/
+https://stackoverflow.com/questions/38732946/does-elm-have-a-debugging-function-that-can-print-an-object-to-the-console/54260966#54260966
 https://stackoverflow.com/questions/46428129/understanding-this-elm-url-parser-parser-type-declaration/46432677#46432677
+https://stackoverflow.com/questions/54379403/elm-0-19-how-to-obtain-request-body-when-receiving-badstatus-with-elm-http-2-0
 https://stackoverflow.com/questions/69198003/debugger-says-layout-forced-problem-in-firefox/70864558#70864558
+https://thoughtbot.com/blog/bridging-elm-and-javascript-with-ports
+https://thoughtbot.com/blog/decoding-json-structures-with-elm
+https://www.toptal.com/front-end/getting-started-elm-language
 https://www.youtube.com/@Ellie_editor/videos
