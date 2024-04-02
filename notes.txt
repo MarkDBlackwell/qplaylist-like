@@ -3,6 +3,6 @@ ssh admin@wtmdradio.org
 sudo --login
 login
 # Username is: mark
-sudo chown nowplaying@wtmd.org: Main.js
-ls -dl Main.js
-sudo mv Main.js /var/www/html/playlist
+sudo chown nowplaying@wtmd.org: *.js
+ls -dl *.js
+sudo mv *.js /var/www/html/playlist
